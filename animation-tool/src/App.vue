@@ -22,5 +22,7 @@ import ToolBarVue from './components/ToolBar.vue';
   grid-template-areas: 'explorer preview'
     'toolbar toolbar'
     'timeline timeline';
+  width: 100vw;
+  height: 100vh;
 }
 </style>

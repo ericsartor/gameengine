@@ -14,11 +14,18 @@ export const useExplorerStore = defineStore('explorer', () => {
         draggedItem.value = null;
     }
 
+    const selectedFile = ref<SpriteFile | null>(null);
+    const selectFile = (file: SpriteFile) => {
+        selectedFile.value = file;
+    };
+
     return {
         spriteFiles,
         draggedItem,
         setDraggedItem,
         removeDraggedItem,
+        selectedFile,
+        selectFile,
     };
 
 });

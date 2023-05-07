@@ -70,8 +70,6 @@ const handleAddItem = (items: TrackItem[], spriteFile: SpriteFile) => {
 <style scoped>
 .timeline {
     background: red;
-    height: 50vh;
-    width: 100vw;
     border: 2px solid rgba(0, 0, 0, 0);
 }
 .timeline.ready-for-drop {
