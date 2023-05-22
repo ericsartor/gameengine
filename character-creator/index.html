@@ -2,11 +2,11 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<link rel="icon" href="/favicon.ico" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="styles.css">
 	</head>
 	<body>
-		<section id="partPicker">
+		<section id="partPicker">Body:
 			<label for="bodyPicker">
 				<select id="bodyPicker">
 					<option id="body_1">Masculine (No Top)</option>
@@ -15,7 +15,7 @@
 					<option id="body_4">Feminine</option>
 				</select>
 			</label>
-			<label for="headPicker">
+			<label for="headPicker">Head:
 				<select id="headPicker">
 					<option id="head_1">Head 1</option>
 					<option id="head_2">Head 2</option>
@@ -23,7 +23,7 @@
 					<option id="head_4">Head 4</option>
 				</select>
 			</label>
-			<label for="hairPicker">
+			<label for="hairPicker">Hair:
 				<select id="hairPicker">
 					<option id="hair_1">Hair 1</option>
 					<option id="hair_2">Hair 2</option>
@@ -32,15 +32,19 @@
 				</select>
 			</label>
 		</section>
-		<section id="huePicker"></section>
+		<section id="huePicker">
+			<label for="bodyColor">Body Color:
+				<input id="bodyColor" type="color" />
+			</label>
+			<label for="hairColor">Hair Color:
+				<input id="hairColor" type="color" />
+			</label>
 		<section id="character">
 			<canvas
 				id="characterDisplay"
-				width="200"
-				height="300"
-				style="border: 1px solid #000000"
+				style="border: 1px solid #000000;"
+				
 			></canvas>
 		</section>
-	</body>
-	<script src="./script.js"></script>
+	<script src="./src/script.js"></script>
 </html>
