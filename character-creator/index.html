@@ -6,8 +6,8 @@
 		<link rel="stylesheet" href="styles.css">
 	</head>
 	<body>
-		<section id="partPicker">Body:
-			<label for="bodyPicker">
+		<section id="partPicker">
+			<label for="bodyPicker">Body:
 				<select id="bodyPicker">
 					<option id="body_1">Masculine (No Top)</option>
 					<option id="body_2">Masculine</option>
@@ -34,13 +34,17 @@
 		</section>
 		<section id="huePicker">
 			<label for="bodyColor">Body Color:
-				<input id="bodyColor" type="color" />
+				<input id="bodyColor" type="color" value="#E8AB6A"/>
 			</label>
 			<label for="hairColor">Hair Color:
-				<input id="hairColor" type="color" />
+				<input id="hairColor" type="color" value="#563F27"/>
+			</label>
+			<label for="eyeColor">Eye Color:
+				<input id="eyeColor" type="color" value="#027A64"/>
 			</label>
 		<section id="character">
 			<canvas
+			willReadFrequently="true"
 				id="characterDisplay"
 				style="border: 1px solid #000000;"
 				
