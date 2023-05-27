@@ -1,7 +1,8 @@
-type LogicFunction = (deltaMs: number) => void;
-type DrawFunction = () => void;
-export class Game {
+import { Pawn } from './Pawn.ts';
 
+type LogicFunction = (deltaMs: number, timestampMs: number) => void;
+type DrawFunction = (timestampMs: number) => void;
+export class Game {
     page = document.querySelector<HTMLCanvasElement>('body')!;
     canvas = document.createElement('canvas');
     modalContainer = document.createElement('div');
@@ -42,8 +43,8 @@ export class Game {
         const loop = (timestampMs: number) => {
             const deltaMs = lastTimestampMs > 0 ? timestampMs - lastTimestampMs : 0;
             lastTimestampMs = timestampMs;
-            this.logic(deltaMs);
-            this.draw();
+            this.logic(deltaMs, timestampMs);
+            this.draw(timestampMs);
             window.requestAnimationFrame(loop);
         };
         window.requestAnimationFrame(loop);
@@ -57,7 +58,7 @@ export class Game {
         this.drawFunctions.push(func);
     }
 
-    logic(deltaMs: number) {
+    logic(deltaMs: number, timestampMs: number) {
         // Run development mode logic
         if (this.developmentMode) {
             this.fps = (1000 / deltaMs).toFixed(2);
@@ -65,11 +66,11 @@ export class Game {
 
         // Run user logic functions
         this.logicFunctions.forEach((func) => {
-            func(deltaMs);
+            func(deltaMs, timestampMs);
         });
     }
 
-    draw() {
+    draw(timestampMs: number) {
         // Prepare for next frame
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -82,7 +83,25 @@ export class Game {
 
         // Run user draw functions
         this.drawFunctions.forEach((func) => {
-            func();
+            func(timestampMs);
+        });
+
+        // Run Pawn draw functions
+        Pawn.map.forEach((pawn) => {
+            if (pawn.currentAnimation !== null) {
+                const sprite = pawn.getSprite(timestampMs);
+                this.ctx.drawImage(
+                    sprite.source,
+                    sprite.x,
+                    sprite.y,
+                    sprite.w,
+                    sprite.h,
+                    0,
+                    0,
+                    sprite.w,
+                    sprite.h,
+                );
+            }
         });
     }
 
