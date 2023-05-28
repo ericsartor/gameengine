@@ -113,12 +113,23 @@ const runCharacterCreator = () => {
 							break;
 					}
 					// Green Color indicates body color
-				} else if (imgData.data[i + 1] >= 200) {
+				} else if (imgData.data[i + 1] >= 82) {
 					const redValue = parseInt(bodyColor.value.substring(1, 3), 16);
 					const greenValue = parseInt(bodyColor.value.substring(3, 5), 16);
 					const blueValue = parseInt(bodyColor.value.substring(5), 16);
 					const hsl = rgbToHsl(redValue, greenValue, blueValue);
 					switch (imgData.data[i + 1]) {
+						case 82:
+							const darker = hslToRgb(
+								hsl[0] - 8 < 0 ? hsl[0] - 8 + 360 : hsl[0] - 8,
+								hsl[1],
+								hsl[2] - 40 < 0 ? 0 : hsl[2] - 40
+							);
+							red[i] = darker[0];
+							green[i] = darker[1];
+							blue[i] = darker[2];
+							alpha[i] = 255;
+							break;
 						case 204:
 							const dark = hslToRgb(
 								hsl[0] - 4 < 0 ? hsl[0] - 4 + 360 : hsl[0] - 4,
@@ -184,7 +195,7 @@ const runCharacterCreator = () => {
 			const displayContext = display.getContext("2d");
 			if (displayContext) {
 				displayContext.imageSmoothingEnabled = false;
-				body.src = "./CharacterTest/Body/Body_Walk_M_Top.png";
+				body.src = "./CharacterTest/Body/Body_Walk_M_NoTop.png";
 
 				body.onload = () => {
 					renderImage(displayContext);
@@ -202,10 +213,10 @@ const runCharacterCreator = () => {
 				bodySelect?.addEventListener("change", (e: any) => {
 					switch (e.target.value) {
 						case "Masculine":
-							body.src = "./CharacterTest/Body/Body_Walk_M_Top.png";
+							body.src = "./CharacterTest/Body/Body_Walk_M_NoTop.png";
 							break;
 						case "Masculine (No Top)":
-							body.src = "./CharacterTest/Body/Body_Walk_M_NoTop.png";
+							body.src = "./CharacterTest/Body/Body_Walk_M_NoTopTest.png";
 							break;
 						case "Feminine":
 							body.src = "./CharacterTest/Body/Body_Walk_F_Top.png";
@@ -219,10 +230,10 @@ const runCharacterCreator = () => {
 				headSelect?.addEventListener("change", (e: any) => {
 					switch (e.target.value) {
 						case "Head 1":
-							head.src = "./CharacterTest/Head/Head_1.png";
+							head.src = "./CharacterTest/Head/Head_1Test.png";
 							break;
 						case "Head 2":
-							head.src = "./CharacterTest/Head/Head_2.png";
+							head.src = "./CharacterTest/Head/Head_1.png";
 							break;
 						case "Head 3":
 							head.src = "./CharacterTest/Head/Head_3.png";
@@ -235,6 +246,9 @@ const runCharacterCreator = () => {
 
 				hairSelect?.addEventListener("change", (e: any) => {
 					switch (e.target.value) {
+						case "No Hair":
+							hair.src = "./CharacterTest/blank.png";
+							break;
 						case "Hair 1":
 							hair.src = "./CharacterTest/Hair/Hair_1.png";
 							break;
