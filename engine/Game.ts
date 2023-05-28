@@ -1,4 +1,5 @@
 import { Pawn } from './Pawn.ts';
+import { InputController } from './Input.ts';
 import { GameError } from './errors.ts';
 
 type LogicFunction = (deltaMs: number, timestampMs: number) => void;
@@ -28,6 +29,8 @@ export class Game {
     // Options
     gridSize = 16;
 
+    input: InputController | null = null;
+
     constructor(options: {
         developmentMode?: boolean;
         gridSize?: number;
@@ -56,8 +59,10 @@ export class Game {
 
     // User addin methods
     logicFunctions: LogicFunction[] = [];
+    actionHandlers: { [context: string]: { [action: string]: LogicFunction }} = {};
     drawFunctions: DrawFunction[] = [];
     pawnsToLoad: { name: string, filePath: string }[] = [];
+    inputMapToLoad: string | null = null;
     started = false;
     registerLogic(func: LogicFunction) {
         this.logicFunctions.push(func);
@@ -68,6 +73,14 @@ export class Game {
     registerPawn(name: string, filePath: string) {
         if (this.started) throw new GameError(`tried to register pawn "${name}" after game started`);
         this.pawnsToLoad.push({ name, filePath });
+    }
+    registerInputMap(filePath: string) {
+        this.inputMapToLoad = filePath;
+    }
+    registerActionHandler(context: string, action: string, handler: LogicFunction) {
+        if (!this.actionHandlers[context]) this.actionHandlers[context] = {};
+        if (this.actionHandlers[context][action]) throw new GameError(`already registered action handler for action "${action}" in context "${context}"`);
+        this.actionHandlers[context][action] = handler;
     }
 
 
@@ -85,6 +98,13 @@ export class Game {
     }
     async start() {
         // Load and create pawns
+        if (this.loadProgressCallback !== null) {
+            this.loadProgressCallback({
+                message: 'Loading pawns...',
+                current: 0,
+                total: this.pawnsToLoad.length,
+            });
+        }
         await Promise.all(this.pawnsToLoad.map(async ({ name, filePath }, i) => {
             const jsonData = await fetch(filePath).then((r) => r.json());
             this.pawns.set(name, await Pawn.create(name, jsonData));
@@ -96,6 +116,19 @@ export class Game {
                 });
             }
         }));
+
+        // Load and create InputController
+        if (this.inputMapToLoad !== null) {
+            if (this.loadProgressCallback !== null) {
+                this.loadProgressCallback({
+                    message: 'Loading input map...',
+                    current: 0,
+                    total: 1,
+                });
+            }
+            const jsonData = await fetch(this.inputMapToLoad).then((r) => r.json());
+            this.input = new InputController(jsonData);
+        }
 
         // Signal load completion
         if (this.loadCompleteCallback !== null) this.loadCompleteCallback();
@@ -122,10 +155,19 @@ export class Game {
             this.fps = (1000 / deltaMs).toFixed(2);
         }
 
+        // Handle input actions
+        this.input?.actionsToHandle.forEach((action) => {
+            const handler = this.actionHandlers[action.context][action.action];
+            if (handler) handler(deltaMs, timestampMs);
+        });
+
         // Run user logic functions
         this.logicFunctions.forEach((func) => {
             func(deltaMs, timestampMs);
         });
+
+        // Flush input actions regardless of if they were handled
+        this.input?.flush();
     }
     private draw(timestampMs: number) {
         // Prepare for next frame
@@ -155,8 +197,8 @@ export class Game {
                         sprite.y,
                         sprite.w,
                         sprite.h,
-                        0,
-                        0,
+                        pawn.position.x * this.gridSize,
+                        pawn.position.y * this.gridSize,
                         sprite.w,
                         sprite.h,
                     );

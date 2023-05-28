@@ -9,8 +9,8 @@
             "name": "idle",
             "timelines": [
                 [
-                    { "x": 0, "y": 2, "durationMs": 500, "empty": false },
-                    { "x": 1, "y": 2, "durationMs": 500, "empty": false }
+                    { "x": 0, "y": 2, "durationMs": 300, "empty": false },
+                    { "x": 1, "y": 2, "durationMs": 300, "empty": false }
                 ]
             ]
         },
@@ -18,10 +18,10 @@
             "name": "walk-left",
             "timelines": [
                 [
-                    { "x": 0, "y": 2, "durationMs": 500, "empty": false },
-                    { "x": 0, "y": 1, "durationMs": 500, "empty": false },
-                    { "x": 0, "y": 2, "durationMs": 500, "empty": false },
-                    { "x": 2, "y": 1, "durationMs": 500, "empty": false }
+                    { "x": 0, "y": 2, "durationMs": 100, "empty": false },
+                    { "x": 0, "y": 1, "durationMs": 100, "empty": false },
+                    { "x": 0, "y": 2, "durationMs": 100, "empty": false },
+                    { "x": 2, "y": 1, "durationMs": 100, "empty": false }
                 ]
             ]
         },
@@ -29,10 +29,10 @@
             "name": "walk-right",
             "timelines": [
                 [
-                    { "x": 0, "y": 2, "durationMs": 500, "empty": false },
-                    { "x": 0, "y": 0, "durationMs": 500, "empty": false },
-                    { "x": 0, "y": 2, "durationMs": 500, "empty": false },
-                    { "x": 2, "y": 0, "durationMs": 500, "empty": false }
+                    { "x": 0, "y": 2, "durationMs": 100, "empty": false },
+                    { "x": 0, "y": 0, "durationMs": 100, "empty": false },
+                    { "x": 0, "y": 2, "durationMs": 100, "empty": false },
+                    { "x": 2, "y": 0, "durationMs": 100, "empty": false }
                 ]
             ]
         },
@@ -40,14 +40,14 @@
             "name": "run-left",
             "timelines": [
                 [
-                    { "x": 0, "y": 2, "durationMs": 500, "empty": false },
-                    { "x": 0, "y": 1, "durationMs": 500, "empty": false },
-                    { "x": 1, "y": 1, "durationMs": 500, "empty": false },
-                    { "x": 0, "y": 1, "durationMs": 500, "empty": false },
-                    { "x": 0, "y": 2, "durationMs": 500, "empty": false },
-                    { "x": 2, "y": 1, "durationMs": 500, "empty": false },
-                    { "x": 3, "y": 1, "durationMs": 500, "empty": false },
-                    { "x": 2, "y": 1, "durationMs": 500, "empty": false }
+                    { "x": 0, "y": 2, "durationMs": 100, "empty": false },
+                    { "x": 0, "y": 1, "durationMs": 100, "empty": false },
+                    { "x": 1, "y": 1, "durationMs": 100, "empty": false },
+                    { "x": 0, "y": 1, "durationMs": 100, "empty": false },
+                    { "x": 0, "y": 2, "durationMs": 100, "empty": false },
+                    { "x": 2, "y": 1, "durationMs": 100, "empty": false },
+                    { "x": 3, "y": 1, "durationMs": 100, "empty": false },
+                    { "x": 2, "y": 1, "durationMs": 100, "empty": false }
                 ]
             ]
         },
@@ -55,14 +55,14 @@
             "name": "run-right",
             "timelines": [
                 [
-                    { "x": 0, "y": 2, "durationMs": 500, "empty": false },
-                    { "x": 0, "y": 0, "durationMs": 500, "empty": false },
-                    { "x": 0, "y": 1, "durationMs": 500, "empty": false },
-                    { "x": 0, "y": 0, "durationMs": 500, "empty": false },
-                    { "x": 0, "y": 2, "durationMs": 500, "empty": false },
-                    { "x": 2, "y": 0, "durationMs": 500, "empty": false },
-                    { "x": 3, "y": 0, "durationMs": 500, "empty": false },
-                    { "x": 2, "y": 0, "durationMs": 500, "empty": false }
+                    { "x": 0, "y": 2, "durationMs": 100, "empty": false },
+                    { "x": 0, "y": 0, "durationMs": 100, "empty": false },
+                    { "x": 1, "y": 0, "durationMs": 100, "empty": false },
+                    { "x": 0, "y": 0, "durationMs": 100, "empty": false },
+                    { "x": 0, "y": 2, "durationMs": 100, "empty": false },
+                    { "x": 2, "y": 0, "durationMs": 100, "empty": false },
+                    { "x": 3, "y": 0, "durationMs": 100, "empty": false },
+                    { "x": 2, "y": 0, "durationMs": 100, "empty": false }
                 ]
             ]
         }

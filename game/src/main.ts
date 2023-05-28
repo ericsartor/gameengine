@@ -19,6 +19,9 @@ const state: GameState = {
     
     // Register pawn files, must be done before starting game so they can be loaded
     game.registerPawn('test', '/testdata/animation-test-1.json');
+
+    // Register input map file
+    game.registerInputMap('/testdata/input.json');
     
     // Run logic to modify state, and eventually, modify game assets when that's implemented
     game.registerLogic((deltaMs: number, timestampMs: number) => {
@@ -27,7 +30,29 @@ const state: GameState = {
         state.y += Math.random() * (Math.random() * 10 - 3) * deltaSeconds;
     
         const p = game.getPawn('test');
-        if (p.currentAnimation === null) p.setAnimation('walk-left', timestampMs);
+
+        let idle = true;
+        if (game.input?.getInput('test', 'PlayerWalkNorth').pressed) {
+            game.getPawn('test').position.y -= deltaSeconds * 5;
+            p.setAnimation('run-left', timestampMs);
+            idle = false;
+        }
+        if (game.input?.getInput('test', 'PlayerWalkSouth').pressed) {
+            game.getPawn('test').position.y += deltaSeconds * 5;
+            p.setAnimation('run-right', timestampMs);
+            idle = false;
+        }
+        if (game.input?.getInput('test', 'PlayerWalkWest').pressed) {
+            game.getPawn('test').position.x -= deltaSeconds * 5;
+            p.setAnimation('run-left', timestampMs);
+            idle = false;
+        }
+        if (game.input?.getInput('test', 'PlayerWalkEast').pressed) {
+            game.getPawn('test').position.x += deltaSeconds * 5;
+            p.setAnimation('run-right', timestampMs);
+            idle = false;
+        }
+        if (idle) p.setAnimation('idle', timestampMs);
     });
     
     // Drawing will mostly be handled by the engine, but custom draw functions

@@ -1,0 +1,22 @@
+[
+    {
+        "identifier": "KeyW",
+        "context": "test",
+        "action": "PlayerWalkNorth"
+    },
+    {
+        "identifier": "KeyA",
+        "context": "test",
+        "action": "PlayerWalkWest"
+    },
+    {
+        "identifier": "KeyS",
+        "context": "test",
+        "action": "PlayerWalkSouth"
+    },
+    {
+        "identifier": "KeyD",
+        "context": "test",
+        "action": "PlayerWalkEast"
+    }
+]

@@ -46,6 +46,10 @@ export class Pawn {
     animations = new Map<string, Animation>();
     currentAnimation: Animation | null = null;
     currentAnimationStartMs: number = 0;
+    position = {
+        x: 0,
+        y: 0,
+    };
 
     static async create(name: string, init: any) {
         const pawn = new Pawn(name, init);
@@ -94,6 +98,7 @@ export class Pawn {
     setAnimation(name: string, timestampMs: number) {
         const animation = this.animations.get(name);
         if (animation === undefined) throw new GameError(`invalid animation name "${name}" for Pawn "${this.name}"`);
+        if (this.currentAnimation === animation) return;
         this.currentAnimation = animation;
         this.currentAnimationStartMs = timestampMs;
     }
