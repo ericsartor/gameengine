@@ -31,6 +31,8 @@ const state: GameState = {
     
         const p = game.getPawn('test');
 
+        // TODO: known issue: if you going up+right or down+left, the animation is constantly changing so
+        // it gets stuck on the first frame, technically not an engine bug but a game logic bug
         let idle = true;
         if (game.input?.getInput('test', 'PlayerWalkNorth').pressed) {
             game.getPawn('test').position.y -= deltaSeconds * 5;
