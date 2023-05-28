@@ -9,18 +9,22 @@ const zPawn = zod.object({
     }),
     animations: zod.array(zod.object({
         name: zod.string(),
-        timeline: zod.array(zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            empty: zod.boolean(),
-            durationMs: zod.number(),
-        })),
+        timelines: zod.array(
+            zod.array(
+                zod.object({
+                    x: zod.number(),
+                    y: zod.number(),
+                    empty: zod.boolean(),
+                    durationMs: zod.number(),
+                }),
+            ),
+        ),
     })),
 });
 
 interface Animation {
     name: string;
-    timeline: { x: number, y: number, durationMs: number, empty: boolean }[];
+    timelines: { x: number, y: number, durationMs: number, empty: boolean }[][];
     durationMs: number;
 }
 
@@ -33,15 +37,21 @@ export type Sprite = {
 };
 
 export class Pawn {
-    static map = new Map<string, Pawn>();
 
     name: string;
+    spritesheetImageUrl: string;
     canvas = document.createElement('canvas');
     spritesheet: CanvasRenderingContext2D | null = null;
     imageSize = { width: 0, height: 0 };
     animations = new Map<string, Animation>();
     currentAnimation: Animation | null = null;
     currentAnimationStartMs: number = 0;
+
+    static async create(name: string, init: any) {
+        const pawn = new Pawn(name, init);
+        await pawn.loadData();
+        return pawn;
+    }
 
     constructor(name: string, init: any) {
         // Attempt to validate input
@@ -53,19 +63,20 @@ export class Pawn {
         // Grab/create properties
         this.name = name;
         this.imageSize = pawn.data.imageSize;
+        this.spritesheetImageUrl = pawn.data.spritesheetImage;
         pawn.data.animations.forEach((animation) => {
+            const durations = animation.timelines.map((t) => t.reduce((total, item) => item.durationMs + total , 0));
+            if (new Set(durations).size !== 1) throw new GameError(`animation "${animation.name}" in pawn "${name}" contains timelines with differing durations`)
             this.animations.set(animation.name, {
                 ...animation,
-                durationMs: animation.timeline.reduce((total, item) => item.durationMs + total , 0),
+                durationMs: durations[0],
             });
         });
+    }
 
-        // Track this pawn on static map
-        Pawn.map.set(name, this);
-
-        // Load and prepare spritesheet
-        (async () => {
-            const spritesheetData = await fetch(pawn.data.spritesheetImage).then((r) => r.blob());
+    loadData() {
+        return new Promise<void>(async (resolve) => {
+            const spritesheetData = await fetch(this.spritesheetImageUrl).then((r) => r.blob());
             const img = new Image();
             img.src = URL.createObjectURL(spritesheetData);
             img.onload = () => {
@@ -75,8 +86,9 @@ export class Pawn {
                 this.canvas.height = img.naturalHeight;
                 ctx.drawImage(img, 0, 0);
                 this.spritesheet = ctx;
+                resolve();
             };
-        })();
+        });
     }
 
     setAnimation(name: string, timestampMs: number) {
@@ -91,27 +103,29 @@ export class Pawn {
         this.currentAnimationStartMs = 0;
     }
 
-    getSprite(timestampMs: number): Sprite {
+    getSprite(timestampMs: number): (Sprite | null)[] {
         if (this.currentAnimation === null) throw new GameError(`requested sprite when no animation playing on pawn "${this.name}"`);
         if (this.spritesheet === null) throw new GameError(`requested sprite when spritesheet has not loaded on pawn "${this.name}"`);
         const spot = (timestampMs - this.currentAnimationStartMs) % this.currentAnimation.durationMs;
-        let progressThroughTimeline = 0;
-        const timelineItem = this.currentAnimation.timeline.find((item) => {
-            if (spot >= progressThroughTimeline && spot < progressThroughTimeline + item.durationMs) {
-                return true;
-            } else {
-                progressThroughTimeline += item.durationMs;
-                return false;
-            }
+        return this.currentAnimation.timelines.map((timeline, i) => {
+            let progressThroughTimeline = 0;
+            const timelineItem = timeline.find((item) => {
+                if (spot >= progressThroughTimeline && spot < progressThroughTimeline + item.durationMs) {
+                    return true;
+                } else {
+                    progressThroughTimeline += item.durationMs;
+                    return false;
+                }
+            });
+            if (timelineItem === undefined) throw new GameError(`did not find timeline item for current animation "${this.currentAnimation!.name}" on pawn "${this.name}", timeline ${i}`);
+            return timelineItem.empty ? null : {
+                source: this.canvas,
+                x: timelineItem.x * this.imageSize.width,
+                y: timelineItem.y * this.imageSize.height,
+                w: this.imageSize.width,
+                h: this.imageSize.height,
+            };
         });
-        if (timelineItem === undefined) throw new GameError(`did not find timeline item for current animation "${this.currentAnimation.name}" on pawn "${this.name}"`);
-        return {
-            source: this.canvas,
-            x: timelineItem.x * this.imageSize.width,
-            y: timelineItem.y * this.imageSize.height,
-            w: this.imageSize.width,
-            h: this.imageSize.height,
-        };
     }
 
 }
