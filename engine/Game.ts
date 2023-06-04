@@ -187,22 +187,48 @@ export class Game {
 
         // Run Pawn draw functions
         this.pawns.forEach((pawn) => {
+            // Draw sprite box
+            if (this.developmentMode) {
+                this.ctx.fillStyle = 'yellow';
+                this.ctx.fillRect(
+                    pawn.position.x * this.gridSize,
+                    pawn.position.y * this.gridSize,
+                    pawn.width,
+                    pawn.height,
+                );
+            }
+
+            // Draw sprites
             if (pawn.currentAnimation !== null) {
                 const spriteLayers = pawn.getSprite(timestampMs);
                 spriteLayers.forEach((sprite) => {
                     if (sprite === null) return;
                     this.ctx.drawImage(
                         sprite.source,
-                        sprite.x,
+                        sprite.x + sprite.offsetX,
                         sprite.y,
-                        sprite.w,
-                        sprite.h,
-                        pawn.position.x * this.gridSize,
-                        pawn.position.y * this.gridSize,
-                        sprite.w,
-                        sprite.h,
+                        sprite.width,
+                        sprite.height,
+                        (pawn.position.x * this.gridSize) + sprite.offsetX,
+                        (pawn.position.y * this.gridSize) + sprite.offsetY,
+                        sprite.width,
+                        sprite.height,
                     );
                 });
+            }
+
+            // Draw hitbox
+            if (this.developmentMode) {
+                const hitBox = pawn.getHitBox(timestampMs);
+                if (hitBox !== null) {
+                    this.ctx.strokeStyle = 'red';
+                    this.ctx.strokeRect(
+                        (pawn.position.x * this.gridSize) + hitBox.x,
+                        (pawn.position.y * this.gridSize) + hitBox.y,
+                        hitBox.width,
+                        hitBox.height,
+                    );
+                }
             }
         });
     }

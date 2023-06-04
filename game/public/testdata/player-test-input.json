@@ -1,0 +1,22 @@
+[
+    {
+        "identifier": "KeyW",
+        "context": "test",
+        "action": "RunNorth"
+    },
+    {
+        "identifier": "KeyA",
+        "context": "test",
+        "action": "RunWest"
+    },
+    {
+        "identifier": "KeyS",
+        "context": "test",
+        "action": "RunSouth"
+    },
+    {
+        "identifier": "KeyD",
+        "context": "test",
+        "action": "RunEast"
+    }
+]
