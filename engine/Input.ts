@@ -1,10 +1,11 @@
 import zod from 'zod';
 import { GameError } from './errors';
 
-type Input = {
+export type Input = {
     identifier: string;
     pressed: boolean;
     value: number;
+    timestampMs: number;
 };
 
 // "context" represents "in a menu" vs "controlling character", etc,
@@ -60,6 +61,7 @@ export class InputController {
                     identifier: action.identifier,
                     pressed: false,
                     value: 0,
+                    timestampMs: 0,
                 };
             }
 
@@ -79,6 +81,7 @@ export class InputController {
             if (input && input.pressed === false) {
                 input.pressed = true;
                 input.value = 1;
+                input.timestampMs = performance.now();
                 const actions = this.actionLookupMap[input.identifier];
                 if (actions) {
                     this.actionsToHandle.push(
@@ -90,6 +93,7 @@ export class InputController {
                     identifier: event.code,
                     pressed: true,
                     value: 1,
+                    timestampMs: performance.now(),
                 };
             }
         });
@@ -102,11 +106,13 @@ export class InputController {
             if (input && input.pressed === true) {
                 input.pressed = false;
                 input.value = 0;
+                input.timestampMs = performance.now();
             } else if (!input) {
                 this.inputMap[event.code] = {
                     identifier: event.code,
                     pressed: false,
                     value: 0,
+                    timestampMs: performance.now(),
                 };
             }
         });
@@ -123,6 +129,7 @@ export class InputController {
                 identifier: update.identifier,
                 pressed: false,
                 value: 0,
+                timestampMs: 0,
             };
         }
     }

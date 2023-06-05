@@ -1,5 +1,6 @@
 import './style.css';
 import { Game } from  '../../engine/Game.ts';
+import { Input } from '../../engine/Input.ts';
 
 interface GameState {
     x: number;
@@ -27,42 +28,56 @@ const state: GameState = {
     // Run logic to modify state, and eventually, modify game assets when that's implemented
     game.registerLogic((deltaMs: number, timestampMs: number) => {
         const deltaSeconds = deltaMs / 1000;
-        state.x += Math.random() * (Math.random() * 10 - 3) * deltaSeconds;
-        state.y += Math.random() * (Math.random() * 10 - 3) * deltaSeconds;
+
+        // state.x += Math.random() * (Math.random() * 10 - 3) * deltaSeconds;
+        // state.y += Math.random() * (Math.random() * 10 - 3) * deltaSeconds;
     
         const p = game.getPawn('test');
 
         // TODO: known issue: if you going up+right or down+left, the animation is constantly changing so
         // it gets stuck on the first frame, technically not an engine bug but a game logic bug
         let idle = true;
-        if (game.input?.getInput('test', 'RunNorth').pressed) {
+        let pressedInputTimestamp = Infinity;
+        let animationToPlay = 'Idle';
+
+        let input = game.input?.getInput('test', 'RunNorth');
+        if (input?.pressed) {
             game.getPawn('test').position.y -= deltaSeconds * 4;
-            p.setAnimation('RunNorth', timestampMs);
-            idle = false;
+            animationToPlay = 'RunNorth';
+            pressedInputTimestamp = input.timestampMs;
         }
-        if (game.input?.getInput('test', 'RunSouth').pressed) {
+        input = game.input?.getInput('test', 'RunSouth');
+        if (input?.pressed) {
             game.getPawn('test').position.y += deltaSeconds * 4;
-            p.setAnimation('RunSouth', timestampMs);
-            idle = false;
+            if (input.timestampMs < pressedInputTimestamp) {
+                animationToPlay = 'RunSouth';
+                pressedInputTimestamp = input.timestampMs;
+            }
         }
-        if (game.input?.getInput('test', 'RunWest').pressed) {
+        input = game.input?.getInput('test', 'RunWest');
+        if (input?.pressed) {
             game.getPawn('test').position.x -= deltaSeconds * 4;
-            p.setAnimation('RunWest', timestampMs);
-            idle = false;
+            if (input.timestampMs < pressedInputTimestamp) {
+                animationToPlay = 'RunWest';
+                pressedInputTimestamp = input.timestampMs;
+            }
         }
-        if (game.input?.getInput('test', 'RunEast').pressed) {
+        input = game.input?.getInput('test', 'RunEast');
+        if (input?.pressed) {
             game.getPawn('test').position.x += deltaSeconds * 4;
-            p.setAnimation('RunEast', timestampMs);
-            idle = false;
+            if (input.timestampMs < pressedInputTimestamp) {
+                animationToPlay = 'RunEast';
+                pressedInputTimestamp = input.timestampMs;
+            }
         }
-        // if (idle) p.setAnimation('idle', timestampMs);
+        if (animationToPlay !== 'Idle') p.setAnimation(animationToPlay, timestampMs);
     });
     
     // Drawing will mostly be handled by the engine, but custom draw functions
     // can be implemented, it was convenient for testing
-    game.registerCustomDraw(() => {
-        game.ctx.fillRect(state.x * game.gridSize, state.y * game.gridSize, game.gridSize, game.gridSize)
-    });
+    // game.registerCustomDraw(() => {
+    //     game.ctx.fillRect(state.x * game.gridSize, state.y * game.gridSize, game.gridSize, game.gridSize)
+    // });
 
     game.onLoadProgress((progress) => {
         console.log(progress.message, progress.current, progress.total);
