@@ -18,5 +18,25 @@
         "identifier": "KeyD",
         "context": "test",
         "action": "PlayerWalkEast"
+    },
+	{
+        "identifier": "KeyW+Shift",
+        "context": "test",
+        "action": "PlayerRunNorth"
+    },
+    {
+        "identifier": "KeyA+Shift",
+        "context": "test",
+        "action": "PlayerRunWest"
+    },
+    {
+        "identifier": "KeyS+Shift",
+        "context": "test",
+        "action": "PlayerRunSouth"
+    },
+    {
+        "identifier": "KeyD+Shift",
+        "context": "test",
+        "action": "PlayerRunEast"
     }
 ]

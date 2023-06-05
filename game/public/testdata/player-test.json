@@ -41,14 +41,41 @@
                     { "sheetIndex": 1, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
                 ],
                 [
-                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
-                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
-                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
-                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
-                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
-                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
-                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
-                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
+                    { "sheetIndex": 2, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
+                ]
+            ]
+        },
+		{
+            "name": "WalkSouth",
+            "hitBoxTimeline": [
+                { "x": 0, "y": 0, "width": 16, "height": 16, "empty": false, "durationMs": 400 },
+                { "x": 0, "y": 16, "width": 16, "height": 16, "empty": false, "durationMs": 400 }
+            ],
+            "timelines": [
+                [
+                    { "sheetIndex": 0, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 0, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 0, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 0, "x": 16, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false }
+                ],
+                [
+                    { "sheetIndex": 1, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
+                ],
+                [
+                    { "sheetIndex": 2, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 32, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
                 ]
             ]
         },
@@ -65,6 +92,50 @@
                     { "sheetIndex": 0, "x": 16, "y": 32, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
                     { "sheetIndex": 0, "x":  0, "y": 32, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
                     { "sheetIndex": 0, "x": 16, "y": 32, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false }
+                ],
+				[
+                    { "sheetIndex": 1, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
+                ],
+                [
+                    { "sheetIndex": 2, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
+                ]
+            ]
+        },
+		{
+            "name": "WalkNorth",
+            "hitBoxTimeline": null,
+            "timelines": [
+                [
+                    { "sheetIndex": 0, "x": 32, "y": 32, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 0, "x": 48, "y": 32, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 0, "x": 32, "y": 32, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 0, "x": 16, "y": 32, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false }
+                ],
+				[
+                    { "sheetIndex": 1, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
+                ],
+                [
+                    { "sheetIndex": 2, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 48, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
                 ]
             ]
         },
@@ -81,6 +152,50 @@
                     { "sheetIndex": 0, "x": 16, "y": 16, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
                     { "sheetIndex": 0, "x":  0, "y": 16, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
                     { "sheetIndex": 0, "x": 16, "y": 16, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false }
+                ],
+				[
+                    { "sheetIndex": 1, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
+                ],
+                [
+                    { "sheetIndex": 2, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
+                ]
+            ]
+        },
+		{
+            "name": "WalkWest",
+            "hitBoxTimeline": null,
+            "timelines": [
+                [
+                    { "sheetIndex": 0, "x": 32, "y": 16, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 0, "x": 48, "y": 16, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 0, "x": 32, "y": 16, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 0, "x": 16, "y": 16, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false }
+                ],
+				[
+                    { "sheetIndex": 1, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
+                ],
+                [
+                    { "sheetIndex": 2, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 80, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
                 ]
             ]
         },
@@ -97,6 +212,50 @@
                     { "sheetIndex": 0, "x": 16, "y": 48, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
                     { "sheetIndex": 0, "x":  0, "y": 48, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
                     { "sheetIndex": 0, "x": 16, "y": 48, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false }
+                ],
+				[
+                    { "sheetIndex": 1, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
+                ],
+                [
+                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
+                ]
+            ]
+        },
+		{
+            "name": "WalkEast",
+            "hitBoxTimeline": null,
+            "timelines": [
+                [
+                    { "sheetIndex": 0, "x": 32, "y": 48, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 0, "x": 48, "y": 48, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 0, "x": 32, "y": 48, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 0, "x": 16, "y": 48, "width": 16, "height": 16, "offsetX": 0, "offsetY": 16, "durationMs": 100, "empty": false }
+                ],
+				[
+                    { "sheetIndex": 1, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 1, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
+                ],
+                [
+                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 8, "durationMs": 100, "empty": false },
+                    { "sheetIndex": 2, "x": 0, "y": 0, "width": 16, "height": 16, "offsetX": 0, "offsetY": 7, "durationMs": 100, "empty": false }
                 ]
             ]
         }
