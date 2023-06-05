@@ -52,7 +52,6 @@ const zPawn = zod.object({
 						offsetY: zod.number(),
 						width: zod.number(),
 						height: zod.number(),
-						scale: zod.number(),
 						empty: zod.boolean(),
 						durationMs: zod.number(),
 					})
@@ -83,7 +82,6 @@ interface Animation {
 		offsetY: number;
 		width: number;
 		height: number;
-		scale: number;
 		empty: boolean;
 		durationMs: number;
 	}[][];
@@ -97,7 +95,6 @@ export type Sprite = {
 	offsetY: number;
 	width: number;
 	height: number;
-	scale: number;
 };
 
 export type HitBox = {
@@ -437,7 +434,7 @@ export class Pawn {
 				);
 			if (this.contexts[timelineItem.sheetIndex] === undefined)
 				throw new GameError(
-					`selected sprite's sheetIndex ${timelineItem.sheetIndex} doesn't exist on pawn "${this.name}"`
+					`selected sprite's sheetIndex ${timelineItem.sheetIndex} doesnt exist on pawn "${this.name}"`
 				);
 			return timelineItem.empty
 				? null
@@ -449,7 +446,6 @@ export class Pawn {
 						height: timelineItem.height,
 						offsetX: timelineItem.offsetX,
 						offsetY: timelineItem.offsetY,
-						scale: timelineItem.scale,
 				  };
 		});
 

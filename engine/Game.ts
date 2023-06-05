@@ -37,7 +37,6 @@ export class Game {
 
 		// Style canvas
 		this.canvas.className = "GameCanvas";
-		this.ctx.imageSmoothingEnabled = false;
 
 		// Keep canvas same size as page
 		const setCanvasSize = () => {
@@ -203,7 +202,6 @@ export class Game {
 				const spriteLayers = pawn.getSprite(timestampMs);
 				spriteLayers.forEach((sprite) => {
 					if (sprite === null) return;
-					this.ctx.imageSmoothingEnabled = false;
 					this.ctx.drawImage(
 						sprite.source,
 						sprite.x + sprite.offsetX,
@@ -211,9 +209,9 @@ export class Game {
 						sprite.width,
 						sprite.height,
 						pawn.position.x * this.gridSize + sprite.offsetX,
-						pawn.position.y * this.gridSize + sprite.offsetY * sprite.scale,
-						sprite.width * sprite.scale,
-						sprite.height * sprite.scale
+						pawn.position.y * this.gridSize + sprite.offsetY,
+						sprite.width,
+						sprite.height
 					);
 				});
 			}
