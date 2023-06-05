@@ -1,17 +1,5 @@
 * {
-	box-sizing: border-box;
-	margin: 0;
-	padding: 0;
-}
-
-.GameCanvas {
-	background-color: green;
-
-	/* To Render Pixels without blur */
-	image-rendering: optimizeSpeed;
-	image-rendering: -moz-crisp-edges;
-	image-rendering: -webkit-optimize-contrast;
-	image-rendering: optimize-contrast;
-	image-rendering: pixelated;
-	-ms-interpolation-mode: nearest-neighbor;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }

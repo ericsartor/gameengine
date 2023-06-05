@@ -1,42 +1,22 @@
 [
     {
-        "identifier": "KeyW+Shift",
+        "identifier": "KeyW",
         "context": "test",
         "action": "RunNorth"
     },
     {
-        "identifier": "KeyA+Shift",
+        "identifier": "KeyA",
         "context": "test",
         "action": "RunWest"
     },
     {
-        "identifier": "KeyS+Shift",
+        "identifier": "KeyS",
         "context": "test",
         "action": "RunSouth"
     },
     {
-        "identifier": "KeyD+Shift",
-        "context": "test",
-        "action": "RunEast"
-    },
-	{
-        "identifier": "KeyW",
-        "context": "test",
-        "action": "WalkNorth"
-    },
-    {
-        "identifier": "KeyA",
-        "context": "test",
-        "action": "WalkWest"
-    },
-    {
-        "identifier": "KeyS",
-        "context": "test",
-        "action": "WalkSouth"
-    },
-    {
         "identifier": "KeyD",
         "context": "test",
-        "action": "WalkEast"
+        "action": "RunEast"
     }
 ]
