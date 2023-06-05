@@ -99,6 +99,7 @@ export class InputController {
 		});
 		window.addEventListener("keyup", (event) => {
 			const input = this.inputMap[event.code];
+			console.log(input);
 			if (input) {
 				event.preventDefault();
 				event.stopPropagation();

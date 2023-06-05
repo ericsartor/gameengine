@@ -85,10 +85,10 @@ const state: GameState = {
 	});
 
 	game.onLoadProgress((progress) => {
-		console.log(progress.message, progress.current, progress.total);
+		// console.log(progress.message, progress.current, progress.total);
 	});
 	game.onLoadComplete(() => {
-		console.log("load complete");
+		// console.log("load complete");
 	});
 
 	// Start the game loop
