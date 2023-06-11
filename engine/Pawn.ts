@@ -206,7 +206,7 @@ const colorFilter = (
                     blue[i] = darker[2];
                     alpha[i] = 255;
                     break;
-                case 204:
+                case 201:
                     const dark = hslToRgb(
                         hsl[0] - 4 < 0 ? hsl[0] - 4 + 360 : hsl[0] - 4,
                         hsl[1],
