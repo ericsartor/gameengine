@@ -16,14 +16,29 @@ const state: GameState = {
     const game = new Game({
         gridSize: 16,
         developmentMode: true, // enables overlay which eventually will be customizable
+        inputInits: [
+            {
+                identifier: "KeyW",
+                names: ["RunNorth"],
+            },
+            {
+                identifier: "KeyA",
+                names: ["RunWest"],
+            },
+            {
+                identifier: "KeyS",
+                names: ["RunSouth"],
+            },
+            {
+                identifier: "KeyD",
+                names: ["RunEast"],
+            }
+        ],
     });
     
     // Register pawn files, must be done before starting game so they can be loaded
     // game.registerPawn('test', '/testdata/animation-test-1.json');
     game.registerPawn('test', '/testdata/player-test.json');
-
-    // Register input map file
-    game.registerInputMap('/testdata/player-test-input.json');
     
     // Run logic to modify state, and eventually, modify game assets when that's implemented
     game.registerLogic((deltaMs: number, timestampMs: number) => {
@@ -31,39 +46,43 @@ const state: GameState = {
 
         // state.x += Math.random() * (Math.random() * 10 - 3) * deltaSeconds;
         // state.y += Math.random() * (Math.random() * 10 - 3) * deltaSeconds;
+
+        // Test input buffer
+        if (game.input.buffer.has('RunSouth')) {
+            console.log('Just pressed RunSouth');
+        }
     
         const p = game.getPawn('test');
 
         // TODO: known issue: if you going up+right or down+left, the animation is constantly changing so
         // it gets stuck on the first frame, technically not an engine bug but a game logic bug
-        let idle = true;
         let pressedInputTimestamp = Infinity;
         let animationToPlay = 'Idle';
 
-        let input = game.input?.getInput('test', 'RunNorth');
-        if (input?.pressed) {
+        let input = game.input.get('RunNorth');
+        if (input.pressed) {
             game.getPawn('test').position.y -= deltaSeconds * 4;
             animationToPlay = 'RunNorth';
             pressedInputTimestamp = input.timestampMs;
         }
-        input = game.input?.getInput('test', 'RunSouth');
-        if (input?.pressed) {
+        input = game.input.get('RunSouth');
+        if (input.pressed) {
             game.getPawn('test').position.y += deltaSeconds * 4;
             if (input.timestampMs < pressedInputTimestamp) {
                 animationToPlay = 'RunSouth';
                 pressedInputTimestamp = input.timestampMs;
             }
         }
-        input = game.input?.getInput('test', 'RunWest');
-        if (input?.pressed) {
+        input = game.input.get('RunWest');
+        if (input.pressed) {
             game.getPawn('test').position.x -= deltaSeconds * 4;
             if (input.timestampMs < pressedInputTimestamp) {
                 animationToPlay = 'RunWest';
                 pressedInputTimestamp = input.timestampMs;
             }
         }
-        input = game.input?.getInput('test', 'RunEast');
-        if (input?.pressed) {
+        input = game.input.get('RunEast');
+        if (input.pressed) {
             game.getPawn('test').position.x += deltaSeconds * 4;
             if (input.timestampMs < pressedInputTimestamp) {
                 animationToPlay = 'RunEast';

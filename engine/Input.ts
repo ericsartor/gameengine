@@ -1,148 +1,134 @@
-import zod from 'zod';
 import { GameError } from './errors';
 
+export type InputInit = {
+    names: string[];
+    identifier: string;
+};
 export type Input = {
-    identifier: string;
-    pressed: boolean;
-    value: number;
-    timestampMs: number;
-};
-
-// "context" represents "in a menu" vs "controlling character", etc,
-// it allows for buttons to be used differently in different contexts.
-// "identifier" is either a KeyboardEvent.code value or a Gamepad button/axis name.
-// "value" is a number that means something different depending on the input:
-// gamepad axes use -1.0 - 1.0 to indicate direction/extent, gamepad buttons use 0.0 - 1.0
-// to indicate extent (triggers, for example), and potentially analog keyboards might use this too
-type Action = {
-    context: string;
-    action: string;
-    identifier: string;
-};
-type InputMapping = Action[];
-const zInputMapping = zod.array(zod.object({
-    context: zod.string(),
-    action: zod.string(),
-    identifier: zod.string(),
-}));
-
-type InputMappingUpdate = {
-    context: string;
-    action: string;
-    identifier: string;
+    names: string[];            // keys used to look up the input
+    identifier: string;         // either a KeyboardEvent.code value or a Gamepad button/axis name
+    justHappened: boolean;      // determines if a button was pressed during the last logic loop
+    pressed: boolean;           // only applies to buttons, not axes
+    timestampMs: number;        // last time a change happened on this input
+    value: number;              // a number that means something different depending on the input:
+                                // gamepad axes use -1.0 - 1.0 to indicate direction/extent, gamepad buttons use 0.0 - 1.0
+                                // to indicate extent (triggers, for example), and potentially analog keyboards might use this too
 };
 
 export class InputController {
 
-    private inputMap: { [identifier: string]: Input } = {};
-    private actionLookupMap: { [identifier: string]: Action[] } = {};
-    private inputLookupMap: { [action: string]: { [context: string]: Input } } = {};
-    private mapping: InputMapping;
-    private activeContexts = new Set<string>();
-
-    actionsToHandle: Action[] = [];
-    flush() {
-        this.actionsToHandle.length = 0;
-    }
-
-    constructor(mapping: any) {
-        // Create action look up map and define Inputs
-        const mappingResult = zInputMapping.safeParse(mapping);
-        if (!mappingResult.success) throw new GameError('invalid input mapping provided');
-        this.mapping = mappingResult.data;
-        mappingResult.data.forEach((action) => {
-            // Populate action lookup map
-            if (!this.actionLookupMap[action.identifier]) this.actionLookupMap[action.identifier] = []
-            this.actionLookupMap[action.identifier].push(action);
-
-            // Create Input
-            if (!this.inputMap[action.identifier]) {
-                this.inputMap[action.identifier] = {
-                    identifier: action.identifier,
-                    pressed: false,
-                    value: 0,
-                    timestampMs: 0,
-                };
-            }
-
-            // Populate Input lookup map
-            if (!this.inputLookupMap[action.context]) this.inputLookupMap[action.context] = {};
-            if (this.inputLookupMap[action.context][action.action]) throw new GameError(`duplicate action "${action.action}" in context "${action.context}"`);
-            this.inputLookupMap[action.context][action.action] = this.inputMap[action.identifier];
-        });
-
-
-        window.addEventListener('keydown', (event) => {
-            const input = this.inputMap[event.code];
-            if (input) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            if (input && input.pressed === false) {
+    // Handle inputs
+    static initialized = false;
+    static instances: InputController[] = [];
+    static keyDownHandler(event: KeyboardEvent) {
+        InputController.instances.forEach((controller) => {
+            const input = controller.inputMap[event.code];
+            if (!input) return;
+            event.preventDefault();
+            event.stopPropagation();
+            if (input.pressed === false) {
                 input.pressed = true;
+                input.justHappened = true;
                 input.value = 1;
                 input.timestampMs = performance.now();
-                const actions = this.actionLookupMap[input.identifier];
-                if (actions) {
-                    this.actionsToHandle.push(
-                        ...actions.filter((action) => this.activeContexts.has(action.context)),
-                    );
-                }
-            } else if (!input) {
-                this.inputMap[event.code] = {
-                    identifier: event.code,
-                    pressed: true,
-                    value: 1,
-                    timestampMs: performance.now(),
-                };
-            }
+                controller.buffer.add(input.identifier);
+                input.names.forEach((name) => {
+                    controller.buffer.add(name);
+                });
+            } 
         });
-        window.addEventListener('keyup', (event) => {
-            const input = this.inputMap[event.code];
-            if (input) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            if (input && input.pressed === true) {
+    }
+    static keyUpHandler(event: KeyboardEvent) {
+        InputController.instances.forEach((controller) => {
+            const input = controller.inputMap[event.code];
+            if (!input) return;
+            event.preventDefault();
+            event.stopPropagation();
+            if (input.pressed === true) {
                 input.pressed = false;
+                input.justHappened = true;
                 input.value = 0;
                 input.timestampMs = performance.now();
-            } else if (!input) {
-                this.inputMap[event.code] = {
-                    identifier: event.code,
-                    pressed: false,
-                    value: 0,
-                    timestampMs: performance.now(),
-                };
+
+                // TODO: should keyup events insert into the buffer?
+                // controller.buffer.add(input.identifier);
+                // input.names.forEach((name) => {
+                //     controller.buffer.add(name);
+                // });
             }
         });
     }
 
-    updateMapping(update: InputMappingUpdate) {
-        const action = this.mapping.find((action) => {
-            return action.action === update.action && action.context === update.context;
-        });
-        if (!action) throw new GameError(`tried to update input mapping for context "${update.context}" and action "${update.action}" but could not find matching context/action`);
-        action.identifier = update.identifier;
-        if (!this.inputMap[update.identifier]) {
-            this.inputMap[update.identifier] = {
-                identifier: update.identifier,
+    private inputMap: { [identifier: string]: Input } = {};
+
+    constructor() {
+        InputController.instances.push(this);
+        if (!InputController.initialized) {
+            window.addEventListener('keydown', InputController.keyDownHandler);
+            window.addEventListener('keyup', InputController.keyUpHandler);
+        }
+    }
+    add(inits: InputInit[]) {
+        inits.forEach((init) => {
+            const input = {
+                ...init,
                 pressed: false,
+                justHappened: false,
                 value: 0,
                 timestampMs: 0,
             };
-        }
+            this.inputMap[init.identifier] = input;
+            init.names.forEach((name) => {
+                if (this.inputMap[name]) throw new GameError(`duplicate input name ${name}`);
+                this.inputMap[name] = input;
+            });
+        });
     }
 
+
+    // Remapping
+
+    remap(name: string, identifier: string) {
+        const input: Input = this.inputMap[identifier] ?? {
+            names: [name],
+            identifier,
+            justHappened: false,
+            pressed: false,
+            value: 0,
+            timestampMs: 0,
+        };
+        this.inputMap[name] = input;
+    }
+
+
+    // Context management
+
+    private activeContexts = new Set<string>();
     activateContext(context: string) {
         this.activeContexts.add(context);
+    }
+    setOnlyContext(context: string) {
+        this.deactivateAllContexts();
+        this.activateContext(context);
     }
     deactivateContext(context: string) {
         this.activeContexts.delete(context);
     }
-    getInput(context: string, action: string) {
-        const input = this.inputLookupMap[context][action];
-        if (!input) throw new GameError(`requested invalid input with context "${context}" and action "${action}"`);
+    deactivateAllContexts() {
+        this.activeContexts.clear();
+    }
+
+
+    // Input querying
+
+    buffer = new Set<string>();
+    flush() {
+        this.buffer.clear();
+    }
+
+    get(name: string): Input {
+        const input = this.inputMap[name];
+        if (!input) throw new GameError(`requested input with unknown name/identifier "${name}"`);
         return input;
     }
 

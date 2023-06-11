@@ -1,5 +1,5 @@
 import { Pawn } from './Pawn.ts';
-import { InputController } from './Input.ts';
+import { InputController, InputInit } from './Input.ts';
 import { GameError } from './errors.ts';
 
 type LogicFunction = (deltaMs: number, timestampMs: number) => void;
@@ -29,11 +29,12 @@ export class Game {
     // Options
     gridSize = 16;
 
-    input: InputController | null = null;
+    input = new InputController();
 
     constructor(options: {
         developmentMode?: boolean;
         gridSize?: number;
+        inputInits?: InputInit[];
     }) {
         // Set options
         if (options.developmentMode !== undefined) this.developmentMode = options.developmentMode;
@@ -53,13 +54,18 @@ export class Game {
         // Append elements
         this.page.append(this.canvas);
         this.page.append(this.modalContainer);
+
+        // Initialize input
+        if (options.inputInits) {
+            this.input.add(options.inputInits);
+        }
     }
 
 
 
     // User addin methods
     logicFunctions: LogicFunction[] = [];
-    actionHandlers: { [context: string]: { [action: string]: LogicFunction }} = {};
+    inputHandlers: { [inputName: string]: LogicFunction } = {};
     drawFunctions: DrawFunction[] = [];
     pawnsToLoad: { name: string, filePath: string }[] = [];
     inputMapToLoad: string | null = null;
@@ -74,13 +80,9 @@ export class Game {
         if (this.started) throw new GameError(`tried to register pawn "${name}" after game started`);
         this.pawnsToLoad.push({ name, filePath });
     }
-    registerInputMap(filePath: string) {
-        this.inputMapToLoad = filePath;
-    }
-    registerActionHandler(context: string, action: string, handler: LogicFunction) {
-        if (!this.actionHandlers[context]) this.actionHandlers[context] = {};
-        if (this.actionHandlers[context][action]) throw new GameError(`already registered action handler for action "${action}" in context "${context}"`);
-        this.actionHandlers[context][action] = handler;
+    registerInputHandler(identifierOrName: string, handler: LogicFunction) {
+        if (this.inputHandlers[identifierOrName]) throw new GameError(`already registered input handler for input with name/identifier "${identifierOrName}"`);
+        this.inputHandlers[identifierOrName] = handler;
     }
 
 
@@ -117,19 +119,6 @@ export class Game {
             }
         }));
 
-        // Load and create InputController
-        if (this.inputMapToLoad !== null) {
-            if (this.loadProgressCallback !== null) {
-                this.loadProgressCallback({
-                    message: 'Loading input map...',
-                    current: 0,
-                    total: 1,
-                });
-            }
-            const jsonData = await fetch(this.inputMapToLoad).then((r) => r.json());
-            this.input = new InputController(jsonData);
-        }
-
         // Signal load completion
         if (this.loadCompleteCallback !== null) this.loadCompleteCallback();
 
@@ -155,10 +144,14 @@ export class Game {
             this.fps = (1000 / deltaMs).toFixed(2);
         }
 
-        // Handle input actions
-        this.input?.actionsToHandle.forEach((action) => {
-            const handler = this.actionHandlers[action.context][action.action];
+        // Handle inputs that have handlers
+        this.input.buffer.forEach((nameOrIdentifier) => {
+            const handler = this.inputHandlers[nameOrIdentifier];
             if (handler) handler(deltaMs, timestampMs);
+            this.input.get(nameOrIdentifier).names.forEach((name) => {
+                const handler = this.inputHandlers[name];
+                if (handler) handler(deltaMs, timestampMs);
+            });
         });
 
         // Run user logic functions
@@ -167,7 +160,7 @@ export class Game {
         });
 
         // Flush input actions regardless of if they were handled
-        this.input?.flush();
+        this.input.flush();
     }
     private draw(timestampMs: number) {
         // Prepare for next frame
