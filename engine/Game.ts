@@ -1,6 +1,7 @@
 import { Pawn } from './Pawn.ts';
 import { InputController, InputInit } from './Input.ts';
 import { GameError } from './errors.ts';
+import { Stage, StageInit } from './Stage.ts';
 
 type LogicFunction = (deltaMs: number, timestampMs: number) => void;
 type DrawFunction = (timestampMs: number) => void;
@@ -28,6 +29,9 @@ export class Game {
 
     // Options
     gridSize = 16;
+
+    // Loop state
+    timestampMs: number = 0;
 
     input = new InputController();
 
@@ -85,6 +89,24 @@ export class Game {
         this.inputHandlers[identifierOrName] = handler;
     }
 
+    
+    // Stages
+    stagesToLoad: {
+        name: string;
+        init: StageInit;
+        loadByDefault: boolean;
+    }[] = [];
+    stage: Stage | null = null;
+    stages = new Map<string, Stage>();
+    registerStage(name: string, init: StageInit, loadByDefault: boolean) {
+        this.stagesToLoad.push({ name, init, loadByDefault});
+    }
+    setStage(name: string) {
+        const stage = this.stages.get(name);
+        if (!stage) throw new GameError(`tried to set unknown Stage "${name}"`);
+        this.stage = stage;
+    }
+
 
 
     // Loading/starting the game
@@ -109,12 +131,34 @@ export class Game {
         }
         await Promise.all(this.pawnsToLoad.map(async ({ name, filePath }, i) => {
             const jsonData = await fetch(filePath).then((r) => r.json());
-            this.pawns.set(name, await Pawn.create(name, jsonData));
+            this.pawns.set(name, await Pawn.create(name, jsonData, this));
             if (this.loadProgressCallback !== null) {
                 this.loadProgressCallback({
                     message: 'Loading pawns...',
                     current: i + 1,
                     total: this.pawnsToLoad.length,
+                });
+            }
+        }));
+
+        // Load and create stages
+        if (this.loadProgressCallback !== null) {
+            this.loadProgressCallback({
+                message: 'Loading stages...',
+                current: 0,
+                total: this.stagesToLoad.length,
+            });
+        }
+        await Promise.all(this.stagesToLoad.map(async ({ name, init, loadByDefault }, i) => {
+            this.stages.set(name, new Stage(init));
+            if (loadByDefault) {
+                this.setStage(name);
+            }
+            if (this.loadProgressCallback !== null) {
+                this.loadProgressCallback({
+                    message: 'Loading stages...',
+                    current: i + 1,
+                    total: this.stagesToLoad.length,
                 });
             }
         }));
@@ -127,6 +171,7 @@ export class Game {
         const loop = (timestampMs: number) => {
             const deltaMs = lastTimestampMs > 0 ? timestampMs - lastTimestampMs : 0;
             lastTimestampMs = timestampMs;
+            this.timestampMs = timestampMs
             this.logic(deltaMs, timestampMs);
             this.draw(timestampMs);
             window.requestAnimationFrame(loop);
@@ -135,6 +180,7 @@ export class Game {
 
         this.started = true;
     }
+
 
 
     // Private methods
@@ -171,6 +217,22 @@ export class Game {
             this.ctx.fillStyle = 'white';
             this.ctx.font = '24px "Courier New"';
             this.ctx.fillText(`${this.fps} FPS`, this.gridSize, this.gridSize * 2);
+        }
+
+        // Run stage draw functions
+        if (this.stage) {
+            // Draw hitbox
+            if (this.developmentMode) {
+                this.stage.hitboxes.forEach((hitBox) => {
+                    this.ctx.strokeStyle = 'red';
+                    this.ctx.strokeRect(
+                        hitBox.x * this.gridSize,
+                        hitBox.y * this.gridSize,
+                        hitBox.width * this.gridSize,
+                        hitBox.height * this.gridSize,
+                    );
+                });
+            }
         }
 
         // Run user draw functions
@@ -212,7 +274,7 @@ export class Game {
 
             // Draw hitbox
             if (this.developmentMode) {
-                const hitBox = pawn.getHitBox(timestampMs);
+                const hitBox = pawn.getHitBox();
                 if (hitBox !== null) {
                     this.ctx.strokeStyle = 'red';
                     this.ctx.strokeRect(

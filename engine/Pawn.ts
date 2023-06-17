@@ -1,5 +1,7 @@
 import zod from 'zod';
 import { GameError } from './errors';
+import { Game } from './Game';
+import { doBoxesOverlap } from './utils.ts';
 
 const zPawn = zod.object({
     sheets: zod.array(zod.object({
@@ -269,6 +271,7 @@ const colorFilter = (
 
 export class Pawn {
 
+    game: Game;
     name: string;
     width = 0;
     height = 0;
@@ -284,18 +287,21 @@ export class Pawn {
         y: 0,
     };
 
-    static async create(name: string, init: any) {
-        const pawn = new Pawn(name, init);
+    static async create(name: string, init: any, game: Game) {
+        const pawn = new Pawn(name, init, game);
         await pawn.loadData();
         return pawn;
     }
 
-    constructor(name: string, init: any) {
+    constructor(name: string, init: any, game: Game) {
         // Attempt to validate input
         const pawn = zPawn.safeParse(init);
         if (!pawn.success) {
             throw new GameError('invalid pawn init');
         }
+
+        // Store reference to game
+        this.game = game;
 
         // Grab/create properties
         this.name = name;
@@ -390,9 +396,9 @@ export class Pawn {
     }
 
     hitBoxCache = new Map<number, HitBox | null>();
-    getHitBox(timestampMs: number): HitBox | null {
+    getHitBox(): HitBox | null {
         // Use cache if possible
-        const cachedHitBox = this.hitBoxCache.get(timestampMs);
+        const cachedHitBox = this.hitBoxCache.get(this.game.timestampMs);
         if (cachedHitBox) return cachedHitBox;
 
         // Return null if no animation
@@ -402,7 +408,7 @@ export class Pawn {
         if (this.currentAnimation.hitBoxTimeline === null) return this.hitBox;
 
         // Find hitbox
-        const spot = (timestampMs - this.currentAnimationStartMs) % this.currentAnimation.durationMs;
+        const spot = (this.game.timestampMs - this.currentAnimationStartMs) % this.currentAnimation.durationMs;
         let progressThroughTimeline = 0;
         const hitBox = this.currentAnimation.hitBoxTimeline.find((item) => {
             if (spot >= progressThroughTimeline && spot < progressThroughTimeline + item.durationMs) {
@@ -415,9 +421,40 @@ export class Pawn {
         if (hitBox === undefined) throw new GameError(`did not find hitbox for current animation "${this.currentAnimation!.name}" on pawn "${this.name}"`);
 
         // Set hitbox cache
-        this.hitBoxCache.set(timestampMs, hitBox);
+        this.hitBoxCache.set(this.game.timestampMs, hitBox);
         
         return hitBox.empty ? null : hitBox;
+    }
+
+    moveRelative(changeX: number, changeY: number): boolean {
+        return this.moveTo(this.position.x + changeX, this.position.y + changeY);
+    }
+
+    moveTo(x: number, y: number): boolean {
+        const hitBox = this.getHitBox();
+        if (hitBox) {
+            const pawnGridHitBox = {
+                x: x + (hitBox.x / this.game.gridSize),
+                y: y + (hitBox.y / this.game.gridSize),
+                width: hitBox.width / this.game.gridSize,
+                height: hitBox.height / this.game.gridSize,
+            };
+
+            // Check stage hitboxes
+            if (this.game.stage) {
+                const stageHitboxConflict = this.game.stage.hitboxes.every((stageHitBox) => {
+                    return doBoxesOverlap(stageHitBox, pawnGridHitBox);
+                });
+                if (stageHitboxConflict) {
+                    return false;
+                }
+            }
+        }
+
+        this.position.x = x;
+        this.position.y = y;
+
+        return true;
     }
 
 }

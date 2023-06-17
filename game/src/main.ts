@@ -35,6 +35,13 @@ const state: GameState = {
             }
         ],
     });
+
+
+    game.registerStage('test', {
+        hitboxes: [
+            { x: 3, y: 3, width: 1, height: 1 },
+        ],
+    }, true);
     
     // Register pawn files, must be done before starting game so they can be loaded
     // game.registerPawn('test', '/testdata/animation-test-1.json');
@@ -61,13 +68,13 @@ const state: GameState = {
 
         let input = game.input.get('RunNorth');
         if (input.pressed) {
-            game.getPawn('test').position.y -= deltaSeconds * 4;
+            game.getPawn('test').moveRelative(0, deltaSeconds * -4);
             animationToPlay = 'RunNorth';
             pressedInputTimestamp = input.timestampMs;
         }
         input = game.input.get('RunSouth');
         if (input.pressed) {
-            game.getPawn('test').position.y += deltaSeconds * 4;
+            game.getPawn('test').moveRelative(0, deltaSeconds * 4);
             if (input.timestampMs < pressedInputTimestamp) {
                 animationToPlay = 'RunSouth';
                 pressedInputTimestamp = input.timestampMs;
@@ -75,7 +82,7 @@ const state: GameState = {
         }
         input = game.input.get('RunWest');
         if (input.pressed) {
-            game.getPawn('test').position.x -= deltaSeconds * 4;
+            game.getPawn('test').moveRelative(deltaSeconds * -4, 0);
             if (input.timestampMs < pressedInputTimestamp) {
                 animationToPlay = 'RunWest';
                 pressedInputTimestamp = input.timestampMs;
@@ -83,7 +90,7 @@ const state: GameState = {
         }
         input = game.input.get('RunEast');
         if (input.pressed) {
-            game.getPawn('test').position.x += deltaSeconds * 4;
+            game.getPawn('test').moveRelative(deltaSeconds * 4, 0);
             if (input.timestampMs < pressedInputTimestamp) {
                 animationToPlay = 'RunEast';
                 pressedInputTimestamp = input.timestampMs;
