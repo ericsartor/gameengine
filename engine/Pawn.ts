@@ -1,7 +1,7 @@
 import zod from 'zod';
 import { GameError } from './errors';
 import { Game } from './Game';
-import { doBoxesOverlap } from './utils.ts';
+import { GridBox, GridPosition, doBoxesOverlap } from './utils.ts';
 
 const zPawn = zod.object({
     sheets: zod.array(zod.object({
@@ -279,13 +279,6 @@ export class Pawn {
     spritesheets: { url: string, chromaKey: null | { red: null | string, green: null | string, blue: null | string } }[];
     canvases: HTMLCanvasElement[] = [];
     contexts: CanvasRenderingContext2D[] = [];
-    animations = new Map<string, Animation>();
-    currentAnimation: Animation | null = null;
-    currentAnimationStartMs: number = 0;
-    position = {
-        x: 0,
-        y: 0,
-    };
 
     static async create(name: string, init: any, game: Game) {
         const pawn = new Pawn(name, init, game);
@@ -341,6 +334,12 @@ export class Pawn {
         }));
     }
 
+
+    // Animations
+
+    animations = new Map<string, Animation>();
+    currentAnimation: Animation | null = null;
+    currentAnimationStartMs: number = 0;
     setAnimation(name: string, timestampMs: number) {
         const animation = this.animations.get(name);
         if (animation === undefined) throw new GameError(`invalid animation name "${name}" for Pawn "${this.name}"`);
@@ -348,7 +347,6 @@ export class Pawn {
         this.currentAnimation = animation;
         this.currentAnimationStartMs = timestampMs;
     }
-    
     stopAnimation() {
         this.currentAnimation = null;
         this.currentAnimationStartMs = 0;
@@ -395,55 +393,86 @@ export class Pawn {
         return sprites;
     }
 
-    hitBoxCache = new Map<number, HitBox | null>();
-    getHitBox(): HitBox | null {
+    hitBoxCache = new Map<number, GridBox | null>();
+    getHitBox(overrideX?: number, overrideY?: number): GridBox | null {
+
         // Use cache if possible
         const cachedHitBox = this.hitBoxCache.get(this.game.timestampMs);
         if (cachedHitBox) return cachedHitBox;
 
-        // Return null if no animation
-        if (this.currentAnimation === null) return null;
+        // Return null if no animation and no fallback hit box
+        if (this.currentAnimation === null && this.hitBox === null) return null;
 
-        // Return base hitbox if no hitbox timeline
-        if (this.currentAnimation.hitBoxTimeline === null) return this.hitBox;
+        if (this.currentAnimation !== null && this.currentAnimation.hitBoxTimeline !== null) {
+            // Find current hitbox for animation if there is a hitbox timeline
 
-        // Find hitbox
-        const spot = (this.game.timestampMs - this.currentAnimationStartMs) % this.currentAnimation.durationMs;
-        let progressThroughTimeline = 0;
-        const hitBox = this.currentAnimation.hitBoxTimeline.find((item) => {
-            if (spot >= progressThroughTimeline && spot < progressThroughTimeline + item.durationMs) {
-                return true;
-            } else {
-                progressThroughTimeline += item.durationMs;
-                return false;
+            // Find hitbox
+            const spot = (this.game.timestampMs - this.currentAnimationStartMs) % this.currentAnimation.durationMs;
+            let progressThroughTimeline = 0;
+            const hitBox = this.currentAnimation.hitBoxTimeline.find((item) => {
+                if (spot >= progressThroughTimeline && spot < progressThroughTimeline + item.durationMs) {
+                    return true;
+                } else {
+                    progressThroughTimeline += item.durationMs;
+                    return false;
+                }
+            });
+            if (hitBox === undefined) throw new GameError(`did not find hitbox for current animation "${this.currentAnimation!.name}" on pawn "${this.name}"`);
+
+            if (hitBox.empty) {
+                if (!overrideX && !overrideY) this.hitBoxCache.set(this.game.timestampMs, null);
+                return null;
             }
-        });
-        if (hitBox === undefined) throw new GameError(`did not find hitbox for current animation "${this.currentAnimation!.name}" on pawn "${this.name}"`);
 
-        // Set hitbox cache
-        this.hitBoxCache.set(this.game.timestampMs, hitBox);
-        
-        return hitBox.empty ? null : hitBox;
-    }
-
-    moveRelative(changeX: number, changeY: number): boolean {
-        return this.moveTo(this.position.x + changeX, this.position.y + changeY);
-    }
-
-    moveTo(x: number, y: number): boolean {
-        const hitBox = this.getHitBox();
-        if (hitBox) {
-            const pawnGridHitBox = {
-                x: x + (hitBox.x / this.game.gridSize),
-                y: y + (hitBox.y / this.game.gridSize),
-                width: hitBox.width / this.game.gridSize,
-                height: hitBox.height / this.game.gridSize,
+            const gridBox = {
+                gridX: (overrideX ?? this.position.gridX) + (hitBox.x / this.game.gridSize),
+                gridY: (overrideY ?? this.position.gridY) + (hitBox.y / this.game.gridSize),
+                gridWidth: hitBox.width / this.game.gridSize,
+                gridHeight: hitBox.height / this.game.gridSize,
             };
 
+            // Set hitbox cache
+            if (!overrideX && !overrideY) this.hitBoxCache.set(this.game.timestampMs, gridBox);
+
+            return gridBox;
+            
+        } else if (this.hitBox !== null) {
+            // Use fall back hit box if defined
+
+            const gridBox = {
+                gridX: (overrideX ?? this.position.gridX) + (this.hitBox.x / this.game.gridSize),
+                gridY: (overrideY ?? this.position.gridY) + (this.hitBox.y / this.game.gridSize),
+                gridWidth: this.hitBox.width / this.game.gridSize,
+                gridHeight: this.hitBox.height / this.game.gridSize,
+            };
+            if (!overrideX && !overrideY) this.hitBoxCache.set(this.game.timestampMs, gridBox);
+            return gridBox;
+
+        } else {
+
+            return null;
+
+        }
+
+    }
+
+
+    // Movement
+
+    position: GridPosition = {
+        gridX: 0,
+        gridY: 0,
+    };
+    moveRelative(changeX: number, changeY: number): boolean {
+        return this.moveTo(this.position.gridX + changeX, this.position.gridY + changeY);
+    }
+    moveTo(x: number, y: number): boolean {
+        const hitBox = this.getHitBox(x, y);
+        if (hitBox) {
             // Check stage hitboxes
             if (this.game.stage) {
                 const stageHitboxConflict = this.game.stage.hitboxes.every((stageHitBox) => {
-                    return doBoxesOverlap(stageHitBox, pawnGridHitBox);
+                    return doBoxesOverlap(stageHitBox, hitBox);
                 });
                 if (stageHitboxConflict) {
                     return false;
@@ -451,8 +480,8 @@ export class Pawn {
             }
         }
 
-        this.position.x = x;
-        this.position.y = y;
+        this.position.gridX = x;
+        this.position.gridY = y;
 
         return true;
     }

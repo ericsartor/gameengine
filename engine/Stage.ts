@@ -1,17 +1,12 @@
-type Hitbox = {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-};
+import { GridBox } from "./utils";
 
 export type StageInit = {
-    hitboxes: Hitbox[];
+    hitboxes: GridBox[];
 };
 
 export class Stage {
 
-    hitboxes: Hitbox[] = [];
+    hitboxes: GridBox[] = [];
 
     constructor(init: StageInit) {
         this.hitboxes = init.hitboxes;

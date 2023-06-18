@@ -226,10 +226,10 @@ export class Game {
                 this.stage.hitboxes.forEach((hitBox) => {
                     this.ctx.strokeStyle = 'red';
                     this.ctx.strokeRect(
-                        hitBox.x * this.gridSize,
-                        hitBox.y * this.gridSize,
-                        hitBox.width * this.gridSize,
-                        hitBox.height * this.gridSize,
+                        hitBox.gridX * this.gridSize,
+                        hitBox.gridY * this.gridSize,
+                        hitBox.gridWidth * this.gridSize,
+                        hitBox.gridHeight * this.gridSize,
                     );
                 });
             }
@@ -246,8 +246,8 @@ export class Game {
             if (this.developmentMode) {
                 this.ctx.fillStyle = 'yellow';
                 this.ctx.fillRect(
-                    pawn.position.x * this.gridSize,
-                    pawn.position.y * this.gridSize,
+                    pawn.position.gridX * this.gridSize,
+                    pawn.position.gridY * this.gridSize,
                     pawn.width,
                     pawn.height,
                 );
@@ -264,8 +264,8 @@ export class Game {
                         sprite.y,
                         sprite.width,
                         sprite.height,
-                        (pawn.position.x * this.gridSize) + sprite.offsetX,
-                        (pawn.position.y * this.gridSize) + sprite.offsetY,
+                        (pawn.position.gridX * this.gridSize) + sprite.offsetX,
+                        (pawn.position.gridY * this.gridSize) + sprite.offsetY,
                         sprite.width,
                         sprite.height,
                     );
@@ -278,10 +278,10 @@ export class Game {
                 if (hitBox !== null) {
                     this.ctx.strokeStyle = 'red';
                     this.ctx.strokeRect(
-                        (pawn.position.x * this.gridSize) + hitBox.x,
-                        (pawn.position.y * this.gridSize) + hitBox.y,
-                        hitBox.width,
-                        hitBox.height,
+                        hitBox.gridX * this.gridSize,
+                        hitBox.gridY * this.gridSize,
+                        hitBox.gridWidth * this.gridSize,
+                        hitBox.gridHeight * this.gridSize,
                     );
                 }
             }

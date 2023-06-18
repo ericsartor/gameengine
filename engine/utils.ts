@@ -1,20 +1,31 @@
-export type Box = {
-    x: number;
-    y: number;
+export type PixelBox = {
+    pixelX: number;
+    pixelY: number;
     width: number;
     height: number;
 };
-export const doBoxesOverlap = (box1: Box, box2: Box) => {
+export type GridBox = {
+    gridX: number;
+    gridY: number;
+    gridWidth: number;
+    gridHeight: number;
+};
+export type GridPosition = {
+    gridX: number;
+    gridY: number;
+};
+
+export const doBoxesOverlap = (box1: GridBox, box2: GridBox) => {
     // Calculate the coordinates of the corners of each box
-    const box1Left = box1.x;
-    const box1Right = box1.x + box1.width;
-    const box1Top = box1.y;
-    const box1Bottom = box1.y + box1.height;
+    const box1Left = box1.gridX;
+    const box1Right = box1.gridX + box1.gridWidth;
+    const box1Top = box1.gridY;
+    const box1Bottom = box1.gridY + box1.gridHeight;
     
-    const box2Left = box2.x;
-    const box2Right = box2.x + box2.width;
-    const box2Top = box2.y;
-    const box2Bottom = box2.y + box2.height;
+    const box2Left = box2.gridX;
+    const box2Right = box2.gridX + box2.gridWidth;
+    const box2Top = box2.gridY;
+    const box2Bottom = box2.gridY + box2.gridHeight;
   
     // Check for overlap
     if (

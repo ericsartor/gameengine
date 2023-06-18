@@ -39,7 +39,7 @@ const state: GameState = {
 
     game.registerStage('test', {
         hitboxes: [
-            { x: 3, y: 3, width: 1, height: 1 },
+            { gridX: 3, gridY: 3, gridWidth: 1, gridHeight: 1 },
         ],
     }, true);
     
