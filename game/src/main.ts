@@ -1,6 +1,7 @@
 import './style.css';
 import { Game } from  '../../engine/Game.ts';
 import { Input } from '../../engine/Input.ts';
+import { Pawn } from '../../engine/Pawn.ts';
 
 interface GameState {
     x: number;
@@ -48,8 +49,23 @@ const state: GameState = {
     game.registerPawn('test', '/testdata/player-test.json');
     
     // Run logic to modify state, and eventually, modify game assets when that's implemented
+    let otherPawn: Pawn | null = null;
+    let otherPawnTowards = 8;
     game.registerLogic((deltaMs: number, timestampMs: number) => {
         const deltaSeconds = deltaMs / 1000;
+
+        if (otherPawn === null) {
+            otherPawn = game.getPawn('test').clone();
+            otherPawn.position.gridX = 5;
+            otherPawn.position.gridY = 5;
+            
+        } else {
+            if (otherPawn.position.gridX === otherPawnTowards) {
+                otherPawnTowards = otherPawnTowards === 8 ? 5 : 8;
+            }
+            
+            otherPawn.moveTowards(otherPawnTowards, otherPawn.position.gridY, 2);
+        }
 
         // state.x += Math.random() * (Math.random() * 10 - 3) * deltaSeconds;
         // state.y += Math.random() * (Math.random() * 10 - 3) * deltaSeconds;

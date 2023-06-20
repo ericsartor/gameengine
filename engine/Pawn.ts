@@ -1,7 +1,7 @@
 import zod from 'zod';
 import { GameError } from './errors';
 import { Game } from './Game';
-import { GridBox, GridPosition, doBoxesOverlap } from './utils.ts';
+import { GridBox, GridPosition, closerToZero, doBoxesOverlap } from './utils.ts';
 
 const zPawn = zod.object({
     sheets: zod.array(zod.object({
@@ -269,75 +269,121 @@ const colorFilter = (
     ctx.putImageData(imgData, 0, 0);
 };
 
+type Spritesheet = {
+    url: string; // Blob URL
+    chromaKey: null | { red: null | string, green: null | string, blue: null | string };
+}
+
+export type PawnInit = {
+    game: Game;
+    name: string;
+    width: number;
+    height: number;
+    hitBox: HitBox | null;
+    spritesheets: Spritesheet[];
+    animations: Map<string, Animation>;
+};
+
+export const loadPawnFromFile = async (name: string, filePath: string, game: Game) => {
+    // Download pawn file
+    const jsonData = await fetch(filePath).then((r) => r.json());
+
+    // Attempt to validate input
+    const pawnInit = zPawn.safeParse(jsonData);
+    if (!pawnInit.success) {
+        throw new GameError('invalid pawn init');
+    }
+
+    // Grab/create properties
+    const animations = new Map<string, Animation>();
+    pawnInit.data.animations.forEach((animation) => {
+        const durations = animation.timelines.map((t) => t.reduce((total, item) => item.durationMs + total , 0));
+        if (new Set(durations).size !== 1) throw new GameError(`animation "${animation.name}" in pawn "${name}" contains timelines with differing durations`)
+        animations.set(animation.name, {
+            ...animation,
+            durationMs: durations[0],
+        });
+    });
+    
+    const spritesheets = await Promise.all(pawnInit.data.sheets.map((sheet) => {
+        return new Promise<Spritesheet>(async (resolve) => {
+            const spritesheetData = await fetch(sheet.url).then((r) => r.blob());
+            resolve({
+                url: URL.createObjectURL(spritesheetData),
+                chromaKey: sheet.chromaKey,
+            })
+        });
+    }));
+
+    return new Pawn(name, {
+        name,
+        game,
+        width: pawnInit.data.width,
+        height: pawnInit.data.height,
+        hitBox: pawnInit.data.hitBox,
+        spritesheets,
+        animations,
+    }, game);
+}
+
 export class Pawn {
+
+    static nextId = 1;
+    static getNextId() {
+        return Pawn.nextId++;
+    }
+
+    clone() {
+        const name = `${this.name}-${Pawn.getNextId()}`;
+        const pawn = new Pawn(name, { ...this }, this.game);
+        this.game.addPawn(pawn);
+        return pawn;
+    }
 
     game: Game;
     name: string;
     width = 0;
     height = 0;
     hitBox: HitBox | null = null;
-    spritesheets: { url: string, chromaKey: null | { red: null | string, green: null | string, blue: null | string } }[];
-    canvases: HTMLCanvasElement[] = [];
-    contexts: CanvasRenderingContext2D[] = [];
+    spritesheets: Spritesheet[];
+    canvases: HTMLCanvasElement[];
+    contexts: CanvasRenderingContext2D[];
+    animations: Map<string, Animation>;
 
-    static async create(name: string, init: any, game: Game) {
-        const pawn = new Pawn(name, init, game);
-        await pawn.loadData();
-        return pawn;
-    }
-
-    constructor(name: string, init: any, game: Game) {
-        // Attempt to validate input
-        const pawn = zPawn.safeParse(init);
-        if (!pawn.success) {
-            throw new GameError('invalid pawn init');
-        }
-
-        // Store reference to game
-        this.game = game;
-
-        // Grab/create properties
+    constructor(name: string, init: PawnInit, game: Game) {
         this.name = name;
-        this.spritesheets = pawn.data.sheets;
-        this.width = pawn.data.width;
-        this.height = pawn.data.height;
-        this.hitBox = pawn.data.hitBox;
-        pawn.data.animations.forEach((animation) => {
-            const durations = animation.timelines.map((t) => t.reduce((total, item) => item.durationMs + total , 0));
-            if (new Set(durations).size !== 1) throw new GameError(`animation "${animation.name}" in pawn "${name}" contains timelines with differing durations`)
-            this.animations.set(animation.name, {
-                ...animation,
-                durationMs: durations[0],
-            });
-        });
-    }
-    loadData() {
+        this.game = game;
+        this.spritesheets = structuredClone(init.spritesheets);
+        this.width = init.width;
+        this.height = init.height;
+        this.hitBox = structuredClone(init.hitBox);
+        this.animations = structuredClone(init.animations);
+
+        // Set up canvases
+        this.canvases = [];
         this.canvases.length = this.spritesheets.length;
-        return Promise.all(this.spritesheets.map((sheet, sheetIndex) => {
-            return new Promise<void>(async (resolve) => {
-                const spritesheetData = await fetch(sheet.url).then((r) => r.blob());
-                const img = new Image();
-                img.src = URL.createObjectURL(spritesheetData);
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    if (ctx === null) throw new GameError(`could not initialize context for Pawn ${name}`);
-                    canvas.width = img.naturalWidth;
-                    canvas.height = img.naturalHeight;
-                    ctx.drawImage(img, 0, 0);
-                    if (sheet.chromaKey) colorFilter(ctx, sheet.chromaKey.red, sheet.chromaKey.green, sheet.chromaKey.blue);
-                    this.canvases[sheetIndex] = canvas;
-                    this.contexts[sheetIndex] = ctx;
-                    resolve();
-                };
-            });
-        }));
+        this.contexts = [];
+        this.contexts.length = this.spritesheets.length;
+        this.spritesheets.forEach((sheet, sheetIndex) => {
+            const img = new Image();
+            img.src = sheet.url;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                if (ctx === null) throw new GameError(`could not initialize context for Pawn ${name}`);
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                ctx.drawImage(img, 0, 0);
+                if (sheet.chromaKey) colorFilter(ctx, sheet.chromaKey.red, sheet.chromaKey.green, sheet.chromaKey.blue);
+                this.canvases[sheetIndex] = canvas;
+                this.contexts[sheetIndex] = ctx;
+            };
+        });
     }
 
 
     // Animations
 
-    animations = new Map<string, Animation>();
     currentAnimation: Animation | null = null;
     currentAnimationStartMs: number = 0;
     setAnimation(name: string, timestampMs: number) {
@@ -353,6 +399,9 @@ export class Pawn {
     }
 
     spriteCache = new Map<number, (Sprite | null)[]>();
+    clearSpriteCache() {
+        this.spriteCache.clear();
+    }
     getSprite(timestampMs: number): (Sprite | null)[] {
         // Use cache if possible
         const cachedSprites = this.spriteCache.get(timestampMs);
@@ -393,7 +442,13 @@ export class Pawn {
         return sprites;
     }
 
+
+    // Hitboxes
+
     hitBoxCache = new Map<number, GridBox | null>();
+    clearHitBoxCache() {
+        this.hitBoxCache.clear();
+    }
     getHitBox(overrideX?: number, overrideY?: number): GridBox | null {
 
         // Use cache if possible
@@ -463,20 +518,27 @@ export class Pawn {
         gridX: 0,
         gridY: 0,
     };
-    moveRelative(changeX: number, changeY: number): boolean {
-        return this.moveTo(this.position.gridX + changeX, this.position.gridY + changeY);
-    }
     moveTo(x: number, y: number): boolean {
         const hitBox = this.getHitBox(x, y);
         if (hitBox) {
             // Check stage hitboxes
             if (this.game.stage) {
-                const stageHitboxConflict = this.game.stage.hitboxes.every((stageHitBox) => {
+                const stageHitboxConflict = this.game.stage.hitboxes.some((stageHitBox) => {
                     return doBoxesOverlap(stageHitBox, hitBox);
                 });
                 if (stageHitboxConflict) {
                     return false;
                 }
+            }
+
+            // Check other pawn hitboxes
+            const pawnHitBoxConflict = this.game.pawnList.some((pawn) => {
+                if (pawn === this) return false; // Skip self
+                const pawnHitBox = pawn.getHitBox();
+                return pawnHitBox && doBoxesOverlap(pawnHitBox, hitBox);
+            });
+            if (pawnHitBoxConflict) {
+                return false;
             }
         }
 
@@ -484,6 +546,47 @@ export class Pawn {
         this.position.gridY = y;
 
         return true;
+    }
+    moveRelative(changeX: number, changeY: number): boolean {
+        return this.moveTo(this.position.gridX + changeX, this.position.gridY + changeY);
+    }
+    moveTowards(destinationX: number, destinationY: number, gridUnitsPerSecond: number) {
+        // Calculate required X movement
+        const speedX = this.position.gridX > destinationX ? -gridUnitsPerSecond : gridUnitsPerSecond;
+        const diffX = destinationX - this.position.gridX;
+        const newX = this.position.gridX + closerToZero(diffX, (speedX * this.game.deltaSeconds));
+
+        // Calculate required Y movement
+        const speedY = this.position.gridY > destinationY ? -gridUnitsPerSecond : gridUnitsPerSecond;
+        const diffY = destinationY - this.position.gridY;
+        const newY = this.position.gridY + closerToZero(diffY, (speedY * this.game.deltaSeconds));
+
+        // Move
+        this.moveTo(newX, newY);
+    }
+
+
+
+    // Distances
+
+    distanceMap = new Map<Pawn, { timestampMs: number, gridDistance: number }>();
+    getDistanceToPawn(otherPawn: Pawn) {
+        // Used previous distance value if it was calculated during this logic loop
+        const distanceEntry = this.distanceMap.get(otherPawn);
+        if (distanceEntry && distanceEntry.timestampMs === this.game.timestampMs) return distanceEntry.gridDistance;
+
+        // Make a new distance entry for these pawns
+        const xDistance = Math.abs(this.position.gridX - otherPawn.position.gridX);
+        const yDistance = Math.abs(this.position.gridY - otherPawn.position.gridY);
+        const distance = Math.sqrt((xDistance ** 2) + (yDistance ** 2));
+        const newDistanceEntry = {
+            timestampMs: this.game.timestampMs,
+            gridDistance: distance,
+        };
+        this.distanceMap.set(otherPawn, newDistanceEntry);
+        otherPawn.distanceMap.set(this, newDistanceEntry);
+
+        return newDistanceEntry.gridDistance;
     }
 
 }

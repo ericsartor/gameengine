@@ -1,7 +1,8 @@
-import { Pawn } from './Pawn.ts';
+import { Pawn, loadPawnFromFile } from './Pawn.ts';
 import { InputController, InputInit } from './Input.ts';
 import { GameError } from './errors.ts';
 import { Stage, StageInit } from './Stage.ts';
+import { ONE_MINUTE } from './numbers.ts';
 
 type LogicFunction = (deltaMs: number, timestampMs: number) => void;
 type DrawFunction = (timestampMs: number) => void;
@@ -11,6 +12,11 @@ export class Game {
     
     // Pawns
     pawns = new Map<string, Pawn>();
+    pawnList: Pawn[] = [];
+    addPawn(pawn: Pawn) {
+        this.pawns.set(pawn.name, pawn);
+        this.pawnList.push(pawn);
+    }
     getPawn(name: string): Pawn {
         const pawn = this.pawns.get(name);
         if (pawn === undefined) throw new GameError(`addressed non-existent pawn "${name}"`);
@@ -32,6 +38,8 @@ export class Game {
 
     // Loop state
     timestampMs: number = 0;
+    deltaMs: number = 0;
+    deltaSeconds: number = 0;
 
     input = new InputController();
 
@@ -130,8 +138,7 @@ export class Game {
             });
         }
         await Promise.all(this.pawnsToLoad.map(async ({ name, filePath }, i) => {
-            const jsonData = await fetch(filePath).then((r) => r.json());
-            this.pawns.set(name, await Pawn.create(name, jsonData, this));
+            this.addPawn(await loadPawnFromFile(name, filePath, this));
             if (this.loadProgressCallback !== null) {
                 this.loadProgressCallback({
                     message: 'Loading pawns...',
@@ -172,6 +179,8 @@ export class Game {
             const deltaMs = lastTimestampMs > 0 ? timestampMs - lastTimestampMs : 0;
             lastTimestampMs = timestampMs;
             this.timestampMs = timestampMs
+            this.deltaMs = deltaMs;
+            this.deltaSeconds = deltaMs / 1000;
             this.logic(deltaMs, timestampMs);
             this.draw(timestampMs);
             window.requestAnimationFrame(loop);
@@ -184,6 +193,7 @@ export class Game {
 
 
     // Private methods
+    lastCacheClear = 0;
     private logic(deltaMs: number, timestampMs: number) {
         // Run development mode logic
         if (this.developmentMode) {
@@ -207,6 +217,14 @@ export class Game {
 
         // Flush input actions regardless of if they were handled
         this.input.flush();
+
+        // Clear caches occasionally to avoid memory leaks
+        if (timestampMs - this.lastCacheClear > ONE_MINUTE) {
+            this.pawns.forEach((pawn) => {
+                pawn.clearHitBoxCache();
+                pawn.clearSpriteCache();
+            });
+        }
     }
     private draw(timestampMs: number) {
         // Prepare for next frame
@@ -214,9 +232,28 @@ export class Game {
 
         // Run development mode draw functions
         if (this.developmentMode) {
+            // Set up font drawing
             this.ctx.fillStyle = 'white';
-            this.ctx.font = '24px "Courier New"';
-            this.ctx.fillText(`${this.fps} FPS`, this.gridSize, this.gridSize * 2);
+            this.ctx.font = `${this.gridSize}px "Courier New"`;
+            let lineY = 2;
+            const writeNextLine = (text: string) => {
+                this.ctx.fillText(text, this.gridSize, this.gridSize * lineY++);
+            };
+            
+            // FPS counter
+            writeNextLine(`${this.fps} FPS`);
+
+            // Pawn distances
+            const pawns: Pawn[] = [];
+            this.pawns.forEach((p) => {
+                pawns.push(p);
+            });
+            for (let i = 0; i < pawns.length; i++) {
+                for (let j = i + 1; j < pawns.length; j++) {
+                    const gridDistance = pawns[i].getDistanceToPawn(pawns[j]);
+                    writeNextLine(`${pawns[i].name} -> ${pawns[j].name} = ${gridDistance}`);
+                }
+            }
         }
 
         // Run stage draw functions

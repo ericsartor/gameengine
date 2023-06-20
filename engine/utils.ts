@@ -40,4 +40,8 @@ export const doBoxesOverlap = (box1: GridBox, box2: GridBox) => {
         // Boxes don't overlap
         return false;
     }
-}  
+};
+
+export const closerToZero = (a: number, b: number) => {
+    return Math.abs(a) < Math.abs(b) ? a : b;
+};
