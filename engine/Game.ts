@@ -79,7 +79,7 @@ export class Game {
     logicFunctions: LogicFunction[] = [];
     inputHandlers: { [inputName: string]: LogicFunction } = {};
     drawFunctions: DrawFunction[] = [];
-    pawnsToLoad: { name: string, filePath: string }[] = [];
+    pawnsToLoad: { name: string, filePath: string, initializer?: (p: Pawn) => void }[] = [];
     inputMapToLoad: string | null = null;
     started = false;
     registerLogic(func: LogicFunction) {
@@ -88,9 +88,9 @@ export class Game {
     registerCustomDraw(func: DrawFunction) {
         this.drawFunctions.push(func);
     }
-    registerPawn(name: string, filePath: string) {
+    registerPawn(name: string, filePath: string, initializer?: (p: Pawn) => void) {
         if (this.started) throw new GameError(`tried to register pawn "${name}" after game started`);
-        this.pawnsToLoad.push({ name, filePath });
+        this.pawnsToLoad.push({ name, filePath, initializer });
     }
     registerInputHandler(identifierOrName: string, handler: LogicFunction) {
         if (this.inputHandlers[identifierOrName]) throw new GameError(`already registered input handler for input with name/identifier "${identifierOrName}"`);
@@ -137,8 +137,12 @@ export class Game {
                 total: this.pawnsToLoad.length,
             });
         }
-        await Promise.all(this.pawnsToLoad.map(async ({ name, filePath }, i) => {
-            this.addPawn(await loadPawnFromFile(name, filePath, this));
+        await Promise.all(this.pawnsToLoad.map(async ({ name, filePath, initializer }, i) => {
+            const pawn = await loadPawnFromFile(name, filePath, this);
+            this.addPawn(pawn);
+            if (initializer) {
+                initializer(pawn);
+            }
             if (this.loadProgressCallback !== null) {
                 this.loadProgressCallback({
                     message: 'Loading pawns...',
@@ -208,6 +212,11 @@ export class Game {
                 const handler = this.inputHandlers[name];
                 if (handler) handler(deltaMs, timestampMs);
             });
+        });
+
+        // Handling Pawn paths
+        this.pawns.forEach((p) => {
+            p.moveAlongPath();
         });
 
         // Run user logic functions

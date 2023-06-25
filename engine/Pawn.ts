@@ -1,6 +1,7 @@
 import zod from 'zod';
 import { GameError } from './errors';
 import { Game } from './Game';
+import { GridCoord } from './types.ts';
 import { GridBox, GridPosition, closerToZero, doBoxesOverlap } from './utils.ts';
 
 const zPawn = zod.object({
@@ -570,6 +571,52 @@ export class Pawn {
 
         // Move
         this.moveTo(newX, newY);
+    }
+
+
+    // Pathing
+
+    currentPath: GridCoord[] | null = null;
+    shouldLoopPath = false;
+    pathSpeed = 0;
+    pathDirection = 1; // 1 / -1
+    nextPathIndex = 0;
+    setPath(speed: number, loop: boolean, path: GridCoord[]) {
+        this.pathSpeed = speed;
+        this.currentPath = path;
+        this.nextPathIndex = 0;
+        this.shouldLoopPath = loop;
+        this.pathDirection = 1;
+    }
+    removePath() {
+        if (this.currentPath === null) throw new GameError(`tried to remove path from pawn ${this.name} but there was no active path`);
+        this.currentPath = null;
+        this.pathSpeed = 0;
+        this.nextPathIndex = 0;
+        this.shouldLoopPath = false;
+        this.pathDirection = 1;
+    }
+    moveAlongPath() {
+        if (this.currentPath === null) return;
+
+        // Move along path
+        const nextDestination = this.currentPath[this.nextPathIndex];
+        this.moveTowards(nextDestination.gridX, nextDestination.gridY, this.pathSpeed);
+
+        // If we arrive at a path point, handle updating to the next path point
+        if (this.position.gridX === nextDestination.gridX && this.position.gridY === nextDestination.gridY) {
+            this.nextPathIndex += this.pathDirection;
+            if (this.nextPathIndex === this.currentPath.length || this.nextPathIndex < 0) {
+                if (this.shouldLoopPath) {
+                    // Go to the previous path point and update direction
+                    this.pathDirection *= -1;
+                    this.nextPathIndex += this.pathDirection * 2;
+                } else {
+                    // Not looping so end path
+                    this.removePath();
+                }
+            }
+        }
     }
 
 

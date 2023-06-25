@@ -1,3 +1,27 @@
 - cameras
+- hitbox "groups" so that certain hitboxes can ignore each other
 - stage metadata format/loading
 - allow partial movement when a hitbox would be hit
+- allow Pawns to have a position origin in pixels
+    - hitbox calculations should consider this value
+    - should treat as a negative offset for drawing
+- figure out how to organize class methods that are only to be used by the engine separately from public methods to be used by the game logic
+- dedupe pawn loading if multiple pawns are to use the same config
+
+- docs
+    - inputs
+        - getting inputs by name
+        - checking input buffer
+        - input handlers
+    - pawns
+        - regisering/loading/creating
+        - paths
+        - animations
+        - movement
+        - hitboxes
+    - logic/drawing
+        - registering logic functions
+        - register custom draw functions
+    - loading
+        - how it works
+        - loading progress and complete handlers

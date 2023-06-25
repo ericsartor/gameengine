@@ -23,6 +23,7 @@ export class InputController {
     static keyDownHandler(event: KeyboardEvent) {
         InputController.instances.forEach((controller) => {
             const input = controller.inputMap[event.code];
+            console.log(input);
             if (!input) return;
             event.preventDefault();
             event.stopPropagation();
@@ -89,15 +90,7 @@ export class InputController {
     // Remapping
 
     remap(name: string, identifier: string) {
-        const input: Input = this.inputMap[identifier] ?? {
-            names: [name],
-            identifier,
-            justHappened: false,
-            pressed: false,
-            value: 0,
-            timestampMs: 0,
-        };
-        this.inputMap[name] = input;
+        this.add([{ names: [name], identifier }]);
     }
 
 
