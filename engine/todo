@@ -1,4 +1,5 @@
 - cameras
+    - test centering on hitbox
 - hitbox "groups" so that certain hitboxes can ignore each other
 - stage metadata format/loading
 - allow partial movement when a hitbox would be hit

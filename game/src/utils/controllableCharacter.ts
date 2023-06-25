@@ -15,7 +15,6 @@ export const addControllablePawn = (game: Game) => {
 
         let input = game.input.get('RunNorth');
         if (input.pressed) {
-            console.log('north');
             game.getPawn('controllable-pawn').moveRelative(0, deltaSeconds * -4);
             animationToPlay = 'RunNorth';
             pressedInputTimestamp = input.timestampMs;

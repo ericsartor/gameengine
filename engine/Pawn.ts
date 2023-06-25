@@ -151,9 +151,6 @@ const colorFilter = (
     //Read image and make changes on the fly as it's read
     for (let i: number = 0; i < data.length; i += 4) {
 
-        if (i === (80 * 8 + 8) * 4) {
-            console.log();
-        }
         // Red value indicates hair color
         if (imgData.data[i] >= 200 && imgData.data[i + 1] === 0 && imgData.data[i + 2] === 0 && redColorTargetHex) {
             const redValue = parseInt(redColorTargetHex.substring(1, 3), 16);

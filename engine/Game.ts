@@ -3,6 +3,7 @@ import { InputController, InputInit } from './Input.ts';
 import { GameError } from './errors.ts';
 import { Stage, StageInit } from './Stage.ts';
 import { ONE_MINUTE } from './numbers.ts';
+import { Camera } from './Camera';
 
 type LogicFunction = (deltaMs: number, timestampMs: number) => void;
 type DrawFunction = (timestampMs: number) => void;
@@ -195,6 +196,17 @@ export class Game {
     }
 
 
+    // Camera
+
+    camera = new Camera(this, {
+        width: this.canvas.width,
+        height: this.canvas.height,
+        position: {
+            gridX: -2,
+            gridY: -2,
+        }
+    });
+
 
     // Private methods
     lastCacheClear = 0;
@@ -272,8 +284,8 @@ export class Game {
                 this.stage.hitboxes.forEach((hitBox) => {
                     this.ctx.strokeStyle = 'red';
                     this.ctx.strokeRect(
-                        hitBox.gridX * this.gridSize,
-                        hitBox.gridY * this.gridSize,
+                        (hitBox.gridX * this.gridSize) - (this.camera.position.gridX * this.gridSize),
+                        (hitBox.gridY * this.gridSize) - (this.camera.position.gridY * this.gridSize),
                         hitBox.gridWidth * this.gridSize,
                         hitBox.gridHeight * this.gridSize,
                     );
@@ -292,8 +304,8 @@ export class Game {
             if (this.developmentMode) {
                 this.ctx.fillStyle = 'yellow';
                 this.ctx.fillRect(
-                    pawn.position.gridX * this.gridSize,
-                    pawn.position.gridY * this.gridSize,
+                    (pawn.position.gridX * this.gridSize) - (this.camera.position.gridX * this.gridSize),
+                    (pawn.position.gridY * this.gridSize) - (this.camera.position.gridY * this.gridSize),
                     pawn.width,
                     pawn.height,
                 );
@@ -310,8 +322,8 @@ export class Game {
                         sprite.y,
                         sprite.width,
                         sprite.height,
-                        (pawn.position.gridX * this.gridSize) + sprite.offsetX,
-                        (pawn.position.gridY * this.gridSize) + sprite.offsetY,
+                        (pawn.position.gridX * this.gridSize) + sprite.offsetX - (this.camera.position.gridX * this.gridSize),
+                        (pawn.position.gridY * this.gridSize) + sprite.offsetY - (this.camera.position.gridY * this.gridSize),
                         sprite.width,
                         sprite.height,
                     );
@@ -324,8 +336,8 @@ export class Game {
                 if (hitBox !== null) {
                     this.ctx.strokeStyle = 'red';
                     this.ctx.strokeRect(
-                        hitBox.gridX * this.gridSize,
-                        hitBox.gridY * this.gridSize,
+                        (hitBox.gridX * this.gridSize) - (this.camera.position.gridX * this.gridSize),
+                        (hitBox.gridY * this.gridSize) - (this.camera.position.gridY * this.gridSize),
                         hitBox.gridWidth * this.gridSize,
                         hitBox.gridHeight * this.gridSize,
                     );
