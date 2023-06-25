@@ -545,8 +545,12 @@ export class Pawn {
             }
         }
 
+        // Actually move the pawn
         this.position.gridX = x;
         this.position.gridY = y;
+
+        // Must clear this if we move because the cache becomes invalidated after a movement
+        this.clearHitBoxCache();
 
         return true;
     }
