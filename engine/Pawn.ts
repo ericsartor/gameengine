@@ -449,10 +449,11 @@ export class Pawn {
     clearHitBoxCache() {
         this.hitBoxCache.clear();
     }
-    getHitBox(overrideX?: number, overrideY?: number): GridBox | null {
+    getHitBox(xPosOverride?: number, yPosOverride?: number): GridBox | null {
 
-        // Use cache if possible
-        if (overrideX === undefined && overrideY === undefined) {
+        // Use cache if possible (and only if we aren't overriding the position of the pawn
+        // in order to check a positional new position)
+        if (xPosOverride === undefined && yPosOverride === undefined) {
             const cachedHitBox = this.hitBoxCache.get(this.game.timestampMs);
             if (cachedHitBox) return cachedHitBox;
         }
@@ -477,19 +478,19 @@ export class Pawn {
             if (hitBox === undefined) throw new GameError(`did not find hitbox for current animation "${this.currentAnimation!.name}" on pawn "${this.name}"`);
 
             if (hitBox.empty) {
-                if (overrideX === undefined && overrideY === undefined) this.hitBoxCache.set(this.game.timestampMs, null);
+                if (xPosOverride === undefined && yPosOverride === undefined) this.hitBoxCache.set(this.game.timestampMs, null);
                 return null;
             }
 
             const gridBox = {
-                gridX: (overrideX ?? this.position.gridX) + (hitBox.x / this.game.gridSize),
-                gridY: (overrideY ?? this.position.gridY) + (hitBox.y / this.game.gridSize),
+                gridX: (xPosOverride ?? this.position.gridX) + (hitBox.x / this.game.gridSize),
+                gridY: (yPosOverride ?? this.position.gridY) + (hitBox.y / this.game.gridSize),
                 gridWidth: hitBox.width / this.game.gridSize,
                 gridHeight: hitBox.height / this.game.gridSize,
             };
 
             // Set hitbox cache
-            if (overrideX === undefined && overrideY === undefined) this.hitBoxCache.set(this.game.timestampMs, gridBox);
+            if (xPosOverride === undefined && yPosOverride === undefined) this.hitBoxCache.set(this.game.timestampMs, gridBox);
 
             return gridBox;
             
@@ -497,12 +498,12 @@ export class Pawn {
             // Use fall back hit box if defined
 
             const gridBox = {
-                gridX: (overrideX ?? this.position.gridX) + (this.hitBox.x / this.game.gridSize),
-                gridY: (overrideY ?? this.position.gridY) + (this.hitBox.y / this.game.gridSize),
+                gridX: (xPosOverride ?? this.position.gridX) + (this.hitBox.x / this.game.gridSize),
+                gridY: (yPosOverride ?? this.position.gridY) + (this.hitBox.y / this.game.gridSize),
                 gridWidth: this.hitBox.width / this.game.gridSize,
                 gridHeight: this.hitBox.height / this.game.gridSize,
             };
-            if (overrideX === undefined && overrideY === undefined) this.hitBoxCache.set(this.game.timestampMs, gridBox);
+            if (xPosOverride === undefined && yPosOverride === undefined) this.hitBoxCache.set(this.game.timestampMs, gridBox);
             return gridBox;
 
         } else {
