@@ -452,8 +452,10 @@ export class Pawn {
     getHitBox(overrideX?: number, overrideY?: number): GridBox | null {
 
         // Use cache if possible
-        const cachedHitBox = this.hitBoxCache.get(this.game.timestampMs);
-        if (cachedHitBox) return cachedHitBox;
+        if (overrideX === undefined && overrideY === undefined) {
+            const cachedHitBox = this.hitBoxCache.get(this.game.timestampMs);
+            if (cachedHitBox) return cachedHitBox;
+        }
 
         // Return null if no animation and no fallback hit box
         if (this.currentAnimation === null && this.hitBox === null) return null;
@@ -475,7 +477,7 @@ export class Pawn {
             if (hitBox === undefined) throw new GameError(`did not find hitbox for current animation "${this.currentAnimation!.name}" on pawn "${this.name}"`);
 
             if (hitBox.empty) {
-                if (!overrideX && !overrideY) this.hitBoxCache.set(this.game.timestampMs, null);
+                if (overrideX === undefined && overrideY === undefined) this.hitBoxCache.set(this.game.timestampMs, null);
                 return null;
             }
 
@@ -487,7 +489,7 @@ export class Pawn {
             };
 
             // Set hitbox cache
-            if (!overrideX && !overrideY) this.hitBoxCache.set(this.game.timestampMs, gridBox);
+            if (overrideX === undefined && overrideY === undefined) this.hitBoxCache.set(this.game.timestampMs, gridBox);
 
             return gridBox;
             
@@ -500,7 +502,7 @@ export class Pawn {
                 gridWidth: this.hitBox.width / this.game.gridSize,
                 gridHeight: this.hitBox.height / this.game.gridSize,
             };
-            if (!overrideX && !overrideY) this.hitBoxCache.set(this.game.timestampMs, gridBox);
+            if (overrideX === undefined && overrideY === undefined) this.hitBoxCache.set(this.game.timestampMs, gridBox);
             return gridBox;
 
         } else {

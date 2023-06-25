@@ -46,7 +46,7 @@ const state: GameState = {
     
     // Register pawn files, must be done before starting game so they can be loaded
     // game.registerPawn('test', '/testdata/animation-test-1.json');
-    game.registerPawn('test', '/testdata/player-test.json');
+    game.registerPawn('test', '/testdata/player-test-static-hitbox.json');
     
     // Run logic to modify state, and eventually, modify game assets when that's implemented
     let otherPawn: Pawn | null = null;

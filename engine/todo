@@ -1,5 +1,3 @@
 - cameras
-- address dicotomy of Pawn hitboxes dealing in pixels and other hitboxes (like stage) dealing in grid units, too much math
 - stage metadata format/loading
 - allow partial movement when a hitbox would be hit
-- when two pawns are moving at the same time towards each, they can get stuck together
