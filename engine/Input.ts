@@ -23,7 +23,6 @@ export class InputController {
     static keyDownHandler(event: KeyboardEvent) {
         InputController.instances.forEach((controller) => {
             const input = controller.inputMap[event.code];
-            console.log(input);
             if (!input) return;
             event.preventDefault();
             event.stopPropagation();
