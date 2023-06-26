@@ -1,5 +1,4 @@
-- cameras
-    - test centering on hitbox
+- make the canvas something that can be placed in the page rather than taking over the body
 - hitbox "groups" so that certain hitboxes can ignore each other
 - stage metadata format/loading
 - allow partial movement when a hitbox would be hit

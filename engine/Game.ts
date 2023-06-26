@@ -44,25 +44,28 @@ export class Game {
 
     input = new InputController();
 
+    camera: Camera;
+
     constructor(options: {
         developmentMode?: boolean;
         gridSize?: number;
+        scale?: number;
         inputInits?: InputInit[];
+        screenSize?: {
+            width: number;
+            height: number;
+        },
     }) {
         // Set options
         if (options.developmentMode !== undefined) this.developmentMode = options.developmentMode;
         if (options.gridSize !== undefined) this.gridSize = options.gridSize;
+
+        const scale = options.scale ?? 1;
         
         // Style canvas
         this.canvas.style.backgroundColor = 'black';
-
-        // Keep canvas same size as page
-        const setCanvasSize = () => {
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
-        };
-        setCanvasSize();
-        window.addEventListener('resize', setCanvasSize);
+        this.canvas.width = (options.screenSize?.width ?? window.innerWidth);
+        this.canvas.height = (options.screenSize?.height ??  window.innerHeight);
 
         // Append elements
         this.page.append(this.canvas);
@@ -72,6 +75,12 @@ export class Game {
         if (options.inputInits) {
             this.input.add(options.inputInits);
         }
+
+        // Initialize camera
+        this.camera = new Camera(this, {
+            width: this.canvas.width,
+            height: this.canvas.height,
+        });
     }
 
 
@@ -194,18 +203,6 @@ export class Game {
 
         this.started = true;
     }
-
-
-    // Camera
-
-    camera = new Camera(this, {
-        width: this.canvas.width,
-        height: this.canvas.height,
-        position: {
-            gridX: -2,
-            gridY: -2,
-        }
-    });
 
 
     // Private methods

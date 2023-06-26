@@ -13,3 +13,10 @@ export const enableCameraMovementWithArrowKeys = (game: Game, speed: number) => 
         if (game.input.get('CameraRight').pressed) game.camera.moveRelative(speed * deltaSeconds, 0);
     });
 };
+
+export const centerCameraOnPawn = (game: Game, pawnName: string) => {
+    game.registerLogic(() => {
+        const hitBox = game.getPawn(pawnName).getHitBox();
+        if (hitBox) game.camera.centerOn(hitBox);
+    });
+};
