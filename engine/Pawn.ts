@@ -520,32 +520,86 @@ export class Pawn {
         gridY: 0,
     };
     moveTo(x: number, y: number): boolean {
-        const hitBox = this.getHitBox(x, y);
-        if (hitBox) {
-            // Check stage hitboxes
-            if (this.game.stage) {
-                const stageHitboxConflict = this.game.stage.hitboxes.some((stageHitBox) => {
-                    return doBoxesOverlap(stageHitBox, hitBox);
-                });
-                if (stageHitboxConflict) {
-                    return false;
-                }
-            }
+        // Define movement strategies
+        const strategies = [
+            [
+                { x, y: this.position.gridY },
+                { x, y },
+            ],
+            [
+                { x: this.position.gridX, y },
+                { x, y },
+            ],
+        ];
 
-            // Check other pawn hitboxes
-            const pawnHitBoxConflict = this.game.pawnList.some((pawn) => {
-                if (pawn === this) return false; // Skip self
-                const pawnHitBox = pawn.getHitBox();
-                return pawnHitBox && doBoxesOverlap(pawnHitBox, hitBox);
-            });
-            if (pawnHitBoxConflict) {
-                return false;
-            }
+        if (this.name === 'follower' && x < 3) {
+            console.log('here');
         }
 
-        // Actually move the pawn
-        this.position.gridX = x;
-        this.position.gridY = y;
+        // Attempt movement strategies
+        let mostSuccessfulMovement: null | {
+            successes: number;
+            position: {
+                gridX: number;
+                gridY: number;
+            };
+        } = null;
+        for (const strategy of strategies) {
+
+            // Attempt movement strategy, track how successful it was
+            let successes = 0;
+            const strategyPosition = { gridX: this.position.gridX, gridY: this.position.gridY };
+            for (const position of strategy) {
+
+                const hitBox = this.getHitBox(position.x, position.y);
+                if (hitBox) {
+                    // Check stage hitboxes
+                    if (this.game.stage) {
+                        const stageHitboxConflict = this.game.stage.hitboxes.some((stageHitBox) => {
+                            return doBoxesOverlap(stageHitBox, hitBox);
+                        });
+                        if (stageHitboxConflict) {
+                            break;
+                        }
+                    }
+        
+                    // Check other pawn hitboxes
+                    const pawnHitBoxConflict = this.game.pawnList.some((pawn) => {
+                        if (pawn === this) return false; // Skip self
+                        const pawnHitBox = pawn.getHitBox();
+                        return pawnHitBox && doBoxesOverlap(pawnHitBox, hitBox);
+                    });
+                    if (pawnHitBoxConflict) {
+                        break;
+                    }
+                }
+        
+                // Track the succesful movement
+                successes++;
+                strategyPosition.gridX = position.x;
+                strategyPosition.gridY = position.y;
+
+            }
+
+            // If we had more success in this strategy than the current most successful strategy, track that
+            if ((mostSuccessfulMovement === null && successes > 0) || (mostSuccessfulMovement !== null && successes > mostSuccessfulMovement.successes)) {
+                mostSuccessfulMovement = {
+                    successes,
+                    position: strategyPosition,
+                };
+                
+                // If this strategy was entirely successful, use it
+                if (successes === strategy.length) break;
+            }
+
+        }
+
+        // No movements had any succcess, so the move was not possible
+        if (mostSuccessfulMovement === null) return false;
+
+        // Actually move pawn
+        this.position.gridX = mostSuccessfulMovement.position.gridX;
+        this.position.gridY = mostSuccessfulMovement.position.gridY;
 
         // Must clear this if we move because the cache becomes invalidated after a movement
         this.clearHitBoxCache();
