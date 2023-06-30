@@ -1,7 +1,9 @@
+- create a drawing helper that only takes in grid units and handles things like the camera, pixcel rounding, etc
+    - decide if i want to keep pixel rounding or allow decimal pixels in the destination coordinates for the canvas
 - make the canvas something that can be placed in the page rather than taking over the body
 - hitbox "groups" so that certain hitboxes can ignore each other
 - look into why pawn cant get through 1 grid wide gap in hitboxes (stageTest)
-- look into why pixels arent crisp (stageTest)
+- look into why pixels arent crisp, i think it's because of decimal pixels (stageTest)
 - allow partial movement when a hitbox would be hit
 - allow Pawns to have a position origin in pixels
     - hitbox calculations should consider this value

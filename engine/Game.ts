@@ -311,8 +311,8 @@ export class Game {
                                 sourceY * this.gridSize,
                                 this.gridSize,
                                 this.gridSize,
-                                (destinationX * this.gridSize) - (this.camera.position.gridX * this.gridSize),
-                                (destinationY * this.gridSize) - (this.camera.position.gridY * this.gridSize),
+                                Math.round((destinationX * this.gridSize) - (this.camera.position.gridX * this.gridSize)),
+                                Math.round((destinationY * this.gridSize) - (this.camera.position.gridY * this.gridSize)),
                                 this.gridSize,
                                 this.gridSize,
                             );
@@ -324,33 +324,14 @@ export class Game {
                 }
 
             }
-            // this.stage.grid.forEach((column, destinationX) => {
-            //     column.forEach((cell, destinationY) => {
-            //         cell.forEach((layer) => {
-            //             layer.forEach(([sourceX, sourceY]) => {
-            //                 this.ctx.drawImage(
-            //                     this.stage!.canvas,
-            //                     sourceX * this.gridSize,
-            //                     sourceY * this.gridSize,
-            //                     this.gridSize,
-            //                     this.gridSize,
-            //                     (destinationX * this.gridSize) - (this.camera.position.gridX * this.gridSize),
-            //                     (destinationY * this.gridSize) - (this.camera.position.gridY * this.gridSize),
-            //                     this.gridSize,
-            //                     this.gridSize,
-            //                 );
-            //             });
-            //         });
-            //     });
-            // });
 
             // Draw hitbox
             if (this.developmentMode) {
                 this.stage.hitboxes.forEach((hitBox) => {
                     this.ctx.strokeStyle = 'red';
                     this.ctx.strokeRect(
-                        (hitBox.gridX * this.gridSize) - (this.camera.position.gridX * this.gridSize),
-                        (hitBox.gridY * this.gridSize) - (this.camera.position.gridY * this.gridSize),
+                        Math.round((hitBox.gridX * this.gridSize) - (this.camera.position.gridX * this.gridSize)),
+                        Math.round((hitBox.gridY * this.gridSize) - (this.camera.position.gridY * this.gridSize)),
                         hitBox.gridWidth * this.gridSize,
                         hitBox.gridHeight * this.gridSize,
                     );
@@ -369,8 +350,8 @@ export class Game {
             if (this.developmentMode) {
                 this.ctx.fillStyle = 'yellow';
                 this.ctx.fillRect(
-                    (pawn.position.gridX * this.gridSize) - (this.camera.position.gridX * this.gridSize),
-                    (pawn.position.gridY * this.gridSize) - (this.camera.position.gridY * this.gridSize),
+                    Math.round((pawn.position.gridX * this.gridSize) - (this.camera.position.gridX * this.gridSize)),
+                    Math.round((pawn.position.gridY * this.gridSize) - (this.camera.position.gridY * this.gridSize)),
                     pawn.width,
                     pawn.height,
                 );
@@ -387,8 +368,8 @@ export class Game {
                         sprite.y,
                         sprite.width,
                         sprite.height,
-                        (pawn.position.gridX * this.gridSize) + sprite.offsetX - (this.camera.position.gridX * this.gridSize),
-                        (pawn.position.gridY * this.gridSize) + sprite.offsetY - (this.camera.position.gridY * this.gridSize),
+                        Math.round((pawn.position.gridX * this.gridSize) + sprite.offsetX - (this.camera.position.gridX * this.gridSize)),
+                        Math.round((pawn.position.gridY * this.gridSize) + sprite.offsetY - (this.camera.position.gridY * this.gridSize)),
                         sprite.width,
                         sprite.height,
                     );
