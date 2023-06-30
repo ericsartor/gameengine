@@ -1,7 +1,7 @@
 import { Pawn, loadPawnFromFile } from './Pawn.ts';
 import { InputController, InputInit } from './Input.ts';
 import { GameError } from './errors.ts';
-import { Stage, StageInit } from './Stage.ts';
+import { Stage, StageInit, loadStageFromFile } from './Stage.ts';
 import { ONE_MINUTE } from './numbers.ts';
 import { Camera } from './Camera';
 
@@ -111,13 +111,16 @@ export class Game {
     // Stages
     stagesToLoad: {
         name: string;
-        init: StageInit;
+        filePath: string;
         loadByDefault: boolean;
     }[] = [];
     stage: Stage | null = null;
     stages = new Map<string, Stage>();
-    registerStage(name: string, init: StageInit, loadByDefault: boolean) {
-        this.stagesToLoad.push({ name, init, loadByDefault});
+    registerStage(name: string, filePath: string, loadByDefault: boolean) {
+        this.stagesToLoad.push({ name, filePath, loadByDefault });
+    }
+    addStage(name: string, stage: Stage) {
+        this.stages.set(name, stage);
     }
     setStage(name: string) {
         const stage = this.stages.get(name);
@@ -139,6 +142,29 @@ export class Game {
         this.loadCompleteCallback = callback;
     }
     async start() {
+        // Load and create stages
+        if (this.loadProgressCallback !== null) {
+            this.loadProgressCallback({
+                message: 'Loading stages...',
+                current: 0,
+                total: this.stagesToLoad.length,
+            });
+        }
+        await Promise.all(this.stagesToLoad.map(async ({ name, filePath, loadByDefault }, i) => {
+            const stage = await loadStageFromFile(name, filePath, this);
+            this.addStage(name, stage);
+            if (loadByDefault) {
+                this.setStage(name);
+            }
+            if (this.loadProgressCallback !== null) {
+                this.loadProgressCallback({
+                    message: 'Loading stages...',
+                    current: i + 1,
+                    total: this.stagesToLoad.length,
+                });
+            }
+        }));
+
         // Load and create pawns
         if (this.loadProgressCallback !== null) {
             this.loadProgressCallback({
@@ -158,28 +184,6 @@ export class Game {
                     message: 'Loading pawns...',
                     current: i + 1,
                     total: this.pawnsToLoad.length,
-                });
-            }
-        }));
-
-        // Load and create stages
-        if (this.loadProgressCallback !== null) {
-            this.loadProgressCallback({
-                message: 'Loading stages...',
-                current: 0,
-                total: this.stagesToLoad.length,
-            });
-        }
-        await Promise.all(this.stagesToLoad.map(async ({ name, init, loadByDefault }, i) => {
-            this.stages.set(name, new Stage(init));
-            if (loadByDefault) {
-                this.setStage(name);
-            }
-            if (this.loadProgressCallback !== null) {
-                this.loadProgressCallback({
-                    message: 'Loading stages...',
-                    current: i + 1,
-                    total: this.stagesToLoad.length,
                 });
             }
         }));
@@ -275,7 +279,28 @@ export class Game {
         }
 
         // Run stage draw functions
-        if (this.stage) {
+        if (this.stage !== null) {
+            // Draw stage tiles
+            this.stage.grid.forEach((column, destinationX) => {
+                column.forEach((cell, destinationY) => {
+                    cell.forEach((layer) => {
+                        layer.forEach(([sourceX, sourceY]) => {
+                            this.ctx.drawImage(
+                                this.stage!.canvas,
+                                sourceX * this.gridSize,
+                                sourceY * this.gridSize,
+                                this.gridSize,
+                                this.gridSize,
+                                (destinationX * this.gridSize) - (this.camera.position.gridX * this.gridSize),
+                                (destinationY * this.gridSize) - (this.camera.position.gridY * this.gridSize),
+                                this.gridSize,
+                                this.gridSize,
+                            );
+                        });
+                    });
+                });
+            });
+
             // Draw hitbox
             if (this.developmentMode) {
                 this.stage.hitboxes.forEach((hitBox) => {

@@ -1,10 +1,10 @@
 import { Game } from  '../../../engine/Game.ts';
-import { addStageWithHitbox } from '../utils/stages.ts';
+import { addBasicStage, addStageWithHitbox } from '../utils/stages.ts';
 import { addControllablePawn } from '../utils/controllableCharacter.ts';
 import { addPathPawn } from '../utils/pathing.ts';
 import { centerCameraOnPawn, enableCameraMovementWithArrowKeys } from '../utils/camera.ts';
 
-export const randomTest = async () => {
+export const stageTest = async () => {
     // Create game instance, which will append elements to the body of the page
     const game = new Game({
         gridSize: 16,
@@ -13,18 +13,17 @@ export const randomTest = async () => {
             width: 400,
             height: 400,
         },
-        scale: 2,
     });
 
-    addStageWithHitbox(game);
+    addBasicStage(game);
     const pawnName = 'pawn';
     addControllablePawn(game, pawnName);
-    addPathPawn(game, 2, true, [
-        { gridX: 4, gridY: 4 },
-        { gridX: 8, gridY: 4 },
-        { gridX: 8, gridY: 8 },
-        { gridX: 4, gridY: 4 },
-    ]);
+    // addPathPawn(game, 2, true, [
+    //     { gridX: 4, gridY: 4 },
+    //     { gridX: 8, gridY: 4 },
+    //     { gridX: 8, gridY: 8 },
+    //     { gridX: 4, gridY: 4 },
+    // ]);
     // enableCameraMovementWithArrowKeys(game, 5);
     centerCameraOnPawn(game, pawnName);
     

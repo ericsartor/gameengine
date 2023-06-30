@@ -1,12 +1,15 @@
 - make the canvas something that can be placed in the page rather than taking over the body
 - hitbox "groups" so that certain hitboxes can ignore each other
-- stage metadata format/loading
+- look into why pawn cant get through 1 grid wide gap in hitboxes (stageTest)
+- look into why pixels arent crisp (stageTest)
 - allow partial movement when a hitbox would be hit
 - allow Pawns to have a position origin in pixels
     - hitbox calculations should consider this value
     - should treat as a negative offset for drawing
 - figure out how to organize class methods that are only to be used by the engine separately from public methods to be used by the game logic
 - dedupe pawn loading if multiple pawns are to use the same config
+- Pawn "animation sets", basically matched sets of animations with the same name but different sprites, that can be switched between
+    - this would be for things like a "runing" vs "walking" animation set that would be toggled on press/release of "shift" for example
 
 - docs
     - inputs

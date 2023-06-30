@@ -1,5 +1,5 @@
 import { Game } from  '../../../engine/Game.ts';
-import { addStageWithHitbox } from '../utils/stageWithHitbox.ts';
+import { addStageWithHitbox } from '../utils/stages.ts';
 import { addControllablePawn } from '../utils/controllableCharacter.ts';
 import { centerCameraOnPawn } from '../utils/camera.ts';
 
