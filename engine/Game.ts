@@ -281,10 +281,27 @@ export class Game {
         // Run stage draw functions
         if (this.stage !== null) {
             // Draw stage tiles
-            this.stage.grid.forEach((column, destinationX) => {
-                column.forEach((cell, destinationY) => {
-                    cell.forEach((layer) => {
-                        layer.forEach(([sourceX, sourceY]) => {
+            const xStart = Math.max(0, Math.floor(this.camera.position.gridX));
+            const xEnd = xStart + this.camera.gridWidth + 1;
+            for (let destinationX = xStart; destinationX < xEnd; destinationX++) {
+
+                const yStart = Math.max(0, Math.floor(this.camera.position.gridY));
+                const yEnd = yStart + this.camera.gridHeight + 1;
+                for (let destinationY = yStart; destinationY < yEnd; destinationY++) {
+
+                    // Get layers for this cell if it/they exist
+                    const layers = this.stage.grid[destinationX]?.[destinationY];
+
+                    // Nothing left in this row
+                    if (!layers) break;
+
+                    // Nothing in this layer, but potentially more in the row
+                    if (layers.length === 0) continue;
+
+                    for (const layer of layers) {
+
+                        for (const [sourceX, sourceY] of layer) {
+
                             this.ctx.drawImage(
                                 this.stage!.canvas,
                                 sourceX * this.gridSize,
@@ -296,10 +313,33 @@ export class Game {
                                 this.gridSize,
                                 this.gridSize,
                             );
-                        });
-                    });
-                });
-            });
+                            
+                        }
+
+                    }
+
+                }
+
+            }
+            // this.stage.grid.forEach((column, destinationX) => {
+            //     column.forEach((cell, destinationY) => {
+            //         cell.forEach((layer) => {
+            //             layer.forEach(([sourceX, sourceY]) => {
+            //                 this.ctx.drawImage(
+            //                     this.stage!.canvas,
+            //                     sourceX * this.gridSize,
+            //                     sourceY * this.gridSize,
+            //                     this.gridSize,
+            //                     this.gridSize,
+            //                     (destinationX * this.gridSize) - (this.camera.position.gridX * this.gridSize),
+            //                     (destinationY * this.gridSize) - (this.camera.position.gridY * this.gridSize),
+            //                     this.gridSize,
+            //                     this.gridSize,
+            //                 );
+            //             });
+            //         });
+            //     });
+            // });
 
             // Draw hitbox
             if (this.developmentMode) {
