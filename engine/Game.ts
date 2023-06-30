@@ -67,6 +67,9 @@ export class Game {
         this.canvas.width = (options.screenSize?.width ?? window.innerWidth);
         this.canvas.height = (options.screenSize?.height ??  window.innerHeight);
 
+        // Disable anti-aliasing
+        this.ctx.imageSmoothingEnabled = false;
+
         // Append elements
         this.page.append(this.canvas);
         this.page.append(this.modalContainer);

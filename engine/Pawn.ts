@@ -369,6 +369,7 @@ export class Pawn {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 if (ctx === null) throw new GameError(`could not initialize context for Pawn ${name}`);
+                ctx.imageSmoothingEnabled = false;
                 canvas.width = img.naturalWidth;
                 canvas.height = img.naturalHeight;
                 ctx.drawImage(img, 0, 0);
