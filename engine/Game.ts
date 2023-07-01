@@ -373,8 +373,8 @@ export class Game {
             if (this.developmentMode) {
                 this.ctx.fillStyle = 'yellow';
                 this.ctx.fillRect(
-                    Math.round((pawn.position.gridX * this.gridSize) - (this.camera.position.gridX * this.gridSize)),
-                    Math.round((pawn.position.gridY * this.gridSize) - (this.camera.position.gridY * this.gridSize)),
+                    Math.round(((pawn.position.gridX - pawn.origin.gridX) * this.gridSize) - (this.camera.position.gridX * this.gridSize)),
+                    Math.round(((pawn.position.gridY - pawn.origin.gridY) * this.gridSize) - (this.camera.position.gridY * this.gridSize)),
                     pawn.width,
                     pawn.height,
                 );
@@ -393,8 +393,8 @@ export class Game {
                         sprite.offsetY,
                         sprite.width,
                         sprite.height,
-                        pawn.position.gridX,
-                        pawn.position.gridY,
+                        pawn.position.gridX - pawn.origin.gridX,
+                        pawn.position.gridY - pawn.origin.gridY,
                     );
                 });
             }

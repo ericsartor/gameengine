@@ -6,6 +6,7 @@
     ],
     "width": 16,
     "height": 32,
+    "origin": { "x": 0, "y": 16 },
     "hitBox": {
         "x": 0,
         "y": 16,

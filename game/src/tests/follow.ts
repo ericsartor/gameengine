@@ -20,22 +20,22 @@ export const followerTest = async () => {
     const playerPawnName = 'pawn';
     addControllablePawn(game, playerPawnName);
     centerCameraOnPawn(game, playerPawnName);
-    game.registerPawn('follower', '/testdata/player-test-static-hitbox.json', (pawn) => {
-        pawn.position.gridX = 5;
-        pawn.position.gridY = 5;
-    });
-    game.registerPawn('follower2', '/testdata/player-test-static-hitbox.json', (pawn) => {
-        pawn.position.gridX = 0;
-        pawn.position.gridY = 5;
-    });
+    // game.registerPawn('follower', '/testdata/player-test-static-hitbox.json', (pawn) => {
+    //     pawn.position.gridX = 5;
+    //     pawn.position.gridY = 5;
+    // });
+    // game.registerPawn('follower2', '/testdata/player-test-static-hitbox.json', (pawn) => {
+    //     pawn.position.gridX = 0;
+    //     pawn.position.gridY = 5;
+    // });
 
-    game.registerLogic((deltaMs) => {
-        const player = game.getPawn(playerPawnName);
-        const follower = game.getPawn('follower');
-        follower.moveTowards(player.position.gridX, player.position.gridY, 2);
-        const follower2 = game.getPawn('follower2');
-        follower2.moveTowards(player.position.gridX, player.position.gridY, 2);
-    });
+    // game.registerLogic((deltaMs) => {
+    //     const player = game.getPawn(playerPawnName);
+    //     const follower = game.getPawn('follower');
+    //     follower.moveTowards(player.position.gridX, player.position.gridY, 2);
+    //     const follower2 = game.getPawn('follower2');
+    //     follower2.moveTowards(player.position.gridX, player.position.gridY, 2);
+    // });
     
     // Start the game loop
     await game.start();

@@ -15,6 +15,10 @@ const zPawn = zod.object({
     })),
     width: zod.number(),
     height: zod.number(),
+    origin: zod.object({
+        x: zod.number(),
+        y: zod.number(),
+    }),
     hitBox: zod.union([zod.null(), zod.object({
         x: zod.number(),
         y: zod.number(),
@@ -277,6 +281,10 @@ export type PawnInit = {
     name: string;
     width: number;
     height: number;
+    origin: {
+        gridX: number;
+        gridY: number;
+    };
     hitBox: HitBox | null;
     spritesheets: Spritesheet[];
     animations: Map<string, Animation>;
@@ -318,6 +326,10 @@ export const loadPawnFromFile = async (name: string, filePath: string, game: Gam
         game,
         width: pawnInit.data.width,
         height: pawnInit.data.height,
+        origin: {
+            gridX: pawnInit.data.origin.x / game.gridSize,
+            gridY: pawnInit.data.origin.y / game.gridSize,
+        },
         hitBox: pawnInit.data.hitBox,
         spritesheets,
         animations,
@@ -342,6 +354,7 @@ export class Pawn {
     name: string;
     width = 0;
     height = 0;
+    origin = { gridX: 0, gridY: 0 };
     hitBox: HitBox | null = null;
     spritesheets: Spritesheet[];
     canvases: HTMLCanvasElement[];
@@ -354,6 +367,7 @@ export class Pawn {
         this.spritesheets = structuredClone(init.spritesheets);
         this.width = init.width;
         this.height = init.height;
+        this.origin = init.origin;
         this.hitBox = structuredClone(init.hitBox);
         this.animations = structuredClone(init.animations);
 
@@ -482,8 +496,8 @@ export class Pawn {
             }
 
             const gridBox = {
-                gridX: (xPosOverride ?? this.position.gridX) + (hitBox.x / this.game.gridSize),
-                gridY: (yPosOverride ?? this.position.gridY) + (hitBox.y / this.game.gridSize),
+                gridX: (xPosOverride ?? this.position.gridX) + (hitBox.x / this.game.gridSize) - this.origin.gridX,
+                gridY: (yPosOverride ?? this.position.gridY) + (hitBox.y / this.game.gridSize) - this.origin.gridY,
                 gridWidth: hitBox.width / this.game.gridSize,
                 gridHeight: hitBox.height / this.game.gridSize,
             };
@@ -497,8 +511,8 @@ export class Pawn {
             // Use fall back hit box if defined
 
             const gridBox = {
-                gridX: (xPosOverride ?? this.position.gridX) + (this.hitBox.x / this.game.gridSize),
-                gridY: (yPosOverride ?? this.position.gridY) + (this.hitBox.y / this.game.gridSize),
+                gridX: (xPosOverride ?? this.position.gridX) + (this.hitBox.x / this.game.gridSize) - this.origin.gridX,
+                gridY: (yPosOverride ?? this.position.gridY) + (this.hitBox.y / this.game.gridSize) - this.origin.gridY,
                 gridWidth: this.hitBox.width / this.game.gridSize,
                 gridHeight: this.hitBox.height / this.game.gridSize,
             };
