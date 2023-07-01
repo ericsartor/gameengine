@@ -8,6 +8,7 @@ export const followerTest = async () => {
     const game = new Game({
         el: '#game',
         gridSize: 16,
+        drawGrid: true,
         developmentMode: true, // enables overlay which eventually will be customizable
         // screenSize: {
         //     width: 400,
@@ -20,22 +21,22 @@ export const followerTest = async () => {
     const playerPawnName = 'pawn';
     addControllablePawn(game, playerPawnName);
     centerCameraOnPawn(game, playerPawnName);
-    // game.registerPawn('follower', '/testdata/player-test-static-hitbox.json', (pawn) => {
-    //     pawn.position.gridX = 5;
-    //     pawn.position.gridY = 5;
-    // });
-    // game.registerPawn('follower2', '/testdata/player-test-static-hitbox.json', (pawn) => {
-    //     pawn.position.gridX = 0;
-    //     pawn.position.gridY = 5;
-    // });
-
-    // game.registerLogic((deltaMs) => {
-    //     const player = game.getPawn(playerPawnName);
-    //     const follower = game.getPawn('follower');
-    //     follower.moveTowards(player.position.gridX, player.position.gridY, 2);
-    //     const follower2 = game.getPawn('follower2');
-    //     follower2.moveTowards(player.position.gridX, player.position.gridY, 2);
-    // });
+    
+    game.registerPawn('follower', '/testdata/player-test-static-hitbox.json', (pawn) => {
+        pawn.position.gridX = 3;
+        pawn.position.gridY = 3;
+    });
+    game.registerPawn('follower2', '/testdata/player-test-static-hitbox.json', (pawn) => {
+        pawn.position.gridX = 4;
+        pawn.position.gridY = 4;
+    });
+    game.registerLogic((deltaMs) => {
+        const player = game.getPawn(playerPawnName);
+        const follower = game.getPawn('follower');
+        follower.moveTowards(player.position.gridX, player.position.gridY, 2);
+        const follower2 = game.getPawn('follower2');
+        follower2.moveTowards(player.position.gridX, player.position.gridY, 2.2);
+    });
     
     // Start the game loop
     await game.start();

@@ -586,6 +586,7 @@ export class Pawn {
                                 // Moving right
                                 const otherLeft = conflictingHitBox.gridX;
                                 const thisRight = unmovedHitBox.gridX + unmovedHitBox.gridWidth;
+                                if (otherLeft < thisRight) return false;
                                 const partialX = otherLeft - thisRight;
                                 if (partialX === 0) return false; // Can't even do partial movement, this strategy won't work
                                 minPartialX = closerToZero(partialX, minPartialX);
@@ -593,6 +594,7 @@ export class Pawn {
                                 // Moving left
                                 const otherRight = conflictingHitBox.gridX + conflictingHitBox.gridWidth;
                                 const thisLeft = unmovedHitBox.gridX;
+                                if (otherRight < thisLeft) return false;
                                 const partialX = otherRight - thisLeft;
                                 if (partialX === 0) return false; // Can't even do partial movement, this strategy won't work
                                 minPartialX = closerToZero(partialX, minPartialX);
@@ -604,6 +606,7 @@ export class Pawn {
                                 // Moving down
                                 const otherTop = conflictingHitBox.gridY;
                                 const thisBottom = unmovedHitBox.gridY + unmovedHitBox.gridHeight;
+                                if (otherTop < thisBottom) return false;
                                 const partialY = otherTop - thisBottom;
                                 if (partialY === 0) return false; // Can't even do partial movement, this strategy won't work
                                 minPartialY = closerToZero(partialY, minPartialY);
@@ -611,6 +614,7 @@ export class Pawn {
                                 // Moving up
                                 const otherBottom = conflictingHitBox.gridY + conflictingHitBox.gridHeight;
                                 const thisTop = unmovedHitBox.gridY;
+                                if (otherBottom < thisTop) return false;
                                 const partialY = otherBottom - thisTop;
                                 if (partialY === 0) return false; // Can't even do partial movement, this strategy won't work
                                 minPartialY = closerToZero(partialY, minPartialY);
