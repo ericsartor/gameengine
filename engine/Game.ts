@@ -75,6 +75,9 @@ export class Game {
         this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
         this.ctx.imageSmoothingEnabled = false;
         this.resizeCanvas();
+        window.addEventListener('resize', () => {
+            this.resizeCanvas();
+        });
 
         // Initialize input
         if (options.inputInits) {
