@@ -1,5 +1,5 @@
 import { Game } from  '../../../engine/Game.ts';
-import { addStageWithHitbox } from '../utils/stages.ts';
+import { addBasicStage, addStageWithHitbox } from '../utils/stages.ts';
 import { addControllablePawn } from '../utils/controllableCharacter.ts';
 import { addPathPawn } from '../utils/pathing.ts';
 import { centerCameraOnPawn, enableCameraMovementWithArrowKeys } from '../utils/camera.ts';
@@ -7,16 +7,17 @@ import { centerCameraOnPawn, enableCameraMovementWithArrowKeys } from '../utils/
 export const randomTest = async () => {
     // Create game instance, which will append elements to the body of the page
     const game = new Game({
+        el: '#game',
         gridSize: 16,
         developmentMode: true, // enables overlay which eventually will be customizable
-        screenSize: {
-            width: 400,
-            height: 400,
-        },
+        // screenSize: {
+        //     width: 400,
+        //     height: 400,
+        // },
         scale: 2,
     });
 
-    addStageWithHitbox(game);
+    addBasicStage(game);
     const pawnName = 'pawn';
     addControllablePawn(game, pawnName);
     addPathPawn(game, 2, true, [

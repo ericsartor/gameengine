@@ -4,5 +4,5 @@ import { randomTest } from "./tests/random";
 import { stageTest } from './tests/stage';
 
 // randomTest();
-// followerTest();
-stageTest();
+followerTest();
+// stageTest();

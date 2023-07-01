@@ -520,87 +520,171 @@ export class Pawn {
         gridX: 0,
         gridY: 0,
     };
-    moveTo(x: number, y: number): boolean {
-        // Define movement strategies
-        const strategies = [
-            [
-                { x, y: this.position.gridY },
-                { x, y },
-            ],
-            [
-                { x: this.position.gridX, y },
-                { x, y },
-            ],
-        ];
-
-        if (this.name === 'follower' && x < 3) {
-            console.log('here');
-        }
-
-        // Attempt movement strategies
-        let mostSuccessfulMovement: null | {
-            successes: number;
-            position: {
-                gridX: number;
-                gridY: number;
-            };
-        } = null;
-        for (const strategy of strategies) {
-
-            // Attempt movement strategy, track how successful it was
-            let successes = 0;
-            const strategyPosition = { gridX: this.position.gridX, gridY: this.position.gridY };
-            for (const position of strategy) {
-
-                const hitBox = this.getHitBox(position.x, position.y);
-                if (hitBox) {
-                    // Check stage hitboxes
-                    if (this.game.stage) {
-                        const stageHitboxConflict = this.game.stage.hitboxes.some((stageHitBox) => {
-                            return doBoxesOverlap(stageHitBox, hitBox);
-                        });
-                        if (stageHitboxConflict) {
-                            break;
-                        }
-                    }
+    moveTo(destinationGridX: number, destinationGridY: number, allowPartialMovement = false): boolean {
         
-                    // Check other pawn hitboxes
-                    const pawnHitBoxConflict = this.game.pawnList.some((pawn) => {
-                        if (pawn === this) return false; // Skip self
-                        const pawnHitBox = pawn.getHitBox();
-                        return pawnHitBox && doBoxesOverlap(pawnHitBox, hitBox);
-                    });
-                    if (pawnHitBoxConflict) {
-                        break;
-                    }
-                }
-        
-                // Track the succesful movement
-                successes++;
-                strategyPosition.gridX = position.x;
-                strategyPosition.gridY = position.y;
+        // Check hitbox before moving, avoid cache with overrides
+        const unmovedHitBox = this.getHitBox(this.position.gridX, this.position.gridY);
+        if (unmovedHitBox !== null) {
+            
+            // Define movement strategies
+            const strategies = allowPartialMovement ?
+                [
+                    [
+                        { gridX: destinationGridX },
+                        { gridY: destinationGridY },
+                    ],
+                    [
+                        { gridY: destinationGridY },
+                        { gridX: destinationGridX },
+                    ],
+                ] :
+                // Just move directly to the location if partial movement isn't allowed
+                [
+                    [
+                        { gridX: destinationGridX, gridY: destinationGridY },
+                    ]
+                ];
 
-            }
-
-            // If we had more success in this strategy than the current most successful strategy, track that
-            if ((mostSuccessfulMovement === null && successes > 0) || (mostSuccessfulMovement !== null && successes > mostSuccessfulMovement.successes)) {
-                mostSuccessfulMovement = {
-                    successes,
-                    position: strategyPosition,
+            // Attempt movement strategies
+            let mostSuccessfulMovement: null | {
+                successes: number;
+                position: {
+                    gridX: number;
+                    gridY: number;
                 };
-                
-                // If this strategy was entirely successful, use it
-                if (successes === strategy.length) break;
+            } = null;
+            for (const strategy of strategies) {
+    
+                // Attempt movement strategy, track how successful it was
+                let successes = 0;
+                const strategyPosition = { gridX: this.position.gridX, gridY: this.position.gridY };
+                for (const strategyMovement of strategy) {
+    
+                    let minPartialX = Infinity;
+                    let minPartialY = Infinity;
+                    const tryPartialMovement = (conflictingHitBox: GridBox): boolean => {
+
+                        if (!allowPartialMovement) return false;
+    
+                        if (strategyMovement.gridX !== undefined) {
+                            const diff = strategyMovement.gridX - this.position.gridX;
+                            if (diff > 0) {
+                                // Moving right
+                                const otherLeft = conflictingHitBox.gridX;
+                                const thisRight = unmovedHitBox.gridX + unmovedHitBox.gridWidth;
+                                const partialX = otherLeft - thisRight;
+                                if (partialX === 0) return false; // Can't even do partial movement, this strategy won't work
+                                minPartialX = closerToZero(partialX, minPartialX);
+                            } else if (diff < 0) {
+                                // Moving left
+                                const otherRight = conflictingHitBox.gridX + conflictingHitBox.gridWidth;
+                                const thisLeft = unmovedHitBox.gridX;
+                                const partialX = otherRight - thisLeft;
+                                if (partialX === 0) return false; // Can't even do partial movement, this strategy won't work
+                                minPartialX = closerToZero(partialX, minPartialX);
+                            }
+                        }
+                        if (strategyMovement.gridY !== undefined) {
+                            const diff = strategyMovement.gridY - this.position.gridY;
+                            if (diff > 0) {
+                                // Moving down
+                                const otherTop = conflictingHitBox.gridY;
+                                const thisBottom = unmovedHitBox.gridY + unmovedHitBox.gridHeight;
+                                const partialY = otherTop - thisBottom;
+                                if (partialY === 0) return false; // Can't even do partial movement, this strategy won't work
+                                minPartialY = closerToZero(partialY, minPartialY);
+                            } else if (diff < 0) {
+                                // Moving up
+                                const otherBottom = conflictingHitBox.gridY + conflictingHitBox.gridHeight;
+                                const thisTop = unmovedHitBox.gridY;
+                                const partialY = otherBottom - thisTop;
+                                if (partialY === 0) return false; // Can't even do partial movement, this strategy won't work
+                                minPartialY = closerToZero(partialY, minPartialY);
+                            }
+
+                        }
+
+                        return true;
+
+                    };
+    
+                    // Get hitbox after potential movement
+                    const thisPawnHitBox = this.getHitBox(
+                        strategyMovement.gridX ?? strategyPosition.gridX,
+                        strategyMovement.gridY ?? strategyPosition.gridY,
+                    );
+                    if (thisPawnHitBox) {
+                        let conflict = false;
+    
+                        // Check stage hitboxes
+                        if (this.game.stage) {
+    
+                            for (const stageHitBox of this.game.stage.hitboxes) {
+    
+                                if (doBoxesOverlap(stageHitBox, thisPawnHitBox) && !tryPartialMovement(stageHitBox)) {
+                                    conflict = true;
+                                    break;
+                                }
+    
+                            }
+                            if (conflict) break;
+    
+                        }
+            
+                        // Check other pawn hitboxes
+                        for (const pawn of this.game.pawnList) {
+
+                            if (pawn === this) continue; // Skip self
+                            const pawnHitBox = pawn.getHitBox();
+                            if (pawnHitBox !== null && doBoxesOverlap(pawnHitBox, thisPawnHitBox) && !tryPartialMovement(pawnHitBox)) {
+                                conflict = true;
+                                break;
+                            }
+
+                        }
+                        if (conflict) break;
+    
+                    }
+            
+                    // Track the succesful movement
+                    successes++;
+                    if (minPartialX !== Infinity) strategyPosition.gridX += minPartialX;
+                    else if (strategyMovement.gridX !== undefined) strategyPosition.gridX = strategyMovement.gridX;
+                    if (minPartialY !== Infinity) strategyPosition.gridY += minPartialY;
+                    else if (strategyMovement.gridY !== undefined) strategyPosition.gridY = strategyMovement.gridY;
+    
+                }
+    
+                // If we had more success in this strategy than the current most successful strategy, track that
+                if ((mostSuccessfulMovement === null && successes > 0) || (mostSuccessfulMovement !== null && successes > mostSuccessfulMovement.successes)) {
+                    mostSuccessfulMovement = {
+                        successes,
+                        position: strategyPosition,
+                    };
+                    
+                    // If this strategy was entirely successful, use it
+                    if (successes === strategy.length) break;
+                }
+    
             }
+    
+            // No movements had any succcess, so the move was not possible
+            if (mostSuccessfulMovement === null) return false;
+            
+            // Actually move pawn
+            this.position.gridX = mostSuccessfulMovement.position.gridX;
+            this.position.gridY = mostSuccessfulMovement.position.gridY;
 
+            // Must clear this if we move because the cache becomes invalidated after a movement
+            this.clearHitBoxCache();
+
+            return true;
+            
         }
-
-        // No movements had any succcess, so the move was not possible
-        if (mostSuccessfulMovement === null) return false;
-
+        
         // Actually move pawn
-        this.position.gridX = mostSuccessfulMovement.position.gridX;
-        this.position.gridY = mostSuccessfulMovement.position.gridY;
+        this.position.gridX = destinationGridX;
+        this.position.gridY = destinationGridY;
 
         // Must clear this if we move because the cache becomes invalidated after a movement
         this.clearHitBoxCache();
@@ -608,7 +692,7 @@ export class Pawn {
         return true;
     }
     moveRelative(changeX: number, changeY: number): boolean {
-        return this.moveTo(this.position.gridX + changeX, this.position.gridY + changeY);
+        return this.moveTo(this.position.gridX + changeX, this.position.gridY + changeY, true);
     }
     moveTowards(destinationX: number, destinationY: number, gridUnitsPerSecond: number) {
         // Calculate required X movement
@@ -622,7 +706,7 @@ export class Pawn {
         const newY = this.position.gridY + closerToZero(diffY, (speedY * this.game.deltaSeconds));
 
         // Move
-        this.moveTo(newX, newY);
+        this.moveTo(newX, newY, true);
     }
 
 
