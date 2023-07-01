@@ -64,6 +64,7 @@ export class Game {
         
         // Style canvas
         this.canvas.style.backgroundColor = 'black';
+        this.canvas.style.transform = `scale(${scale})`;
         const cssWidth = (options.screenSize?.width ?? window.innerWidth);
         const cssHeight = (options.screenSize?.height ??  window.innerHeight);
         this.canvas.style.width = cssWidth + 'px';
