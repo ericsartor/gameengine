@@ -75,8 +75,8 @@ interface Animation {
 
 export type Sprite = {
     source: HTMLCanvasElement;
-    x: number;
-    y: number;
+    gridX: number;
+    gridY: number;
     offsetX: number;
     offsetY: number;
     width: number;
@@ -426,8 +426,8 @@ export class Pawn {
             if (this.contexts[timelineItem.sheetIndex] === undefined) throw new GameError(`selected sprite's sheetIndex ${timelineItem.sheetIndex} doesnt exist on pawn "${this.name}"`);
             return timelineItem.empty ? null : {
                 source: this.canvases[timelineItem.sheetIndex],
-                x: timelineItem.x,
-                y: timelineItem.y,
+                gridX: timelineItem.x / this.game.gridSize,
+                gridY: timelineItem.y / this.game.gridSize,
                 width: timelineItem.width,
                 height: timelineItem.height,
                 offsetX: timelineItem.offsetX,

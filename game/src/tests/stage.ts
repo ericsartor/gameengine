@@ -10,9 +10,10 @@ export const stageTest = async () => {
         gridSize: 16,
         developmentMode: true, // enables overlay which eventually will be customizable
         screenSize: {
-            width: 400,
-            height: 400,
+            width: Math.round(window.innerWidth / 2),
+            height: Math.round(window.innerHeight / 2),
         },
+        scale: 2,
     });
 
     addBasicStage(game);

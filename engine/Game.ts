@@ -65,10 +65,10 @@ export class Game {
         // Style canvas
         this.canvas.style.backgroundColor = 'black';
         this.canvas.style.transform = `scale(${scale})`;
-        const cssWidth = (options.screenSize?.width ?? window.innerWidth);
-        const cssHeight = (options.screenSize?.height ??  window.innerHeight);
+        const cssWidth = Math.round(options.screenSize?.width ?? window.innerWidth);
+        const cssHeight = Math.round(options.screenSize?.height ??  window.innerHeight);
         this.canvas.style.width = cssWidth + 'px';
-        this.canvas.style.height = cssWidth + 'px';
+        this.canvas.style.height = cssHeight + 'px';
         this.canvas.width = cssWidth * window.devicePixelRatio;
         this.canvas.height = cssHeight * window.devicePixelRatio;
 
@@ -257,35 +257,32 @@ export class Game {
             });
         }
     }
+    private drawToCanvas(
+        source: CanvasImageSource,
+        sourceX: number,
+        sourceXOffset: number,
+        sourceY: number,
+        sourceYOffset: number,
+        sourceWidth: number,
+        sourceHeight: number,
+        destinationX: number,
+        destinationY: number,
+    ) {
+        this.ctx.drawImage(
+            source,
+            sourceX * this.gridSize,
+            sourceY * this.gridSize,
+            sourceWidth,
+            sourceHeight,
+            Math.round((destinationX * this.gridSize) + sourceXOffset - (this.camera.position.gridX * this.gridSize)),
+            Math.round((destinationY * this.gridSize) + sourceYOffset - (this.camera.position.gridY * this.gridSize)),
+            sourceWidth,
+            sourceHeight,
+        );
+    }
     private draw(timestampMs: number) {
         // Prepare for next frame
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Run development mode draw functions
-        if (this.developmentMode) {
-            // Set up font drawing
-            this.ctx.fillStyle = 'white';
-            this.ctx.font = `${this.gridSize}px "Courier New"`;
-            let lineY = 2;
-            const writeNextLine = (text: string) => {
-                this.ctx.fillText(text, this.gridSize, this.gridSize * lineY++);
-            };
-            
-            // FPS counter
-            writeNextLine(`${this.fps} FPS`);
-
-            // Pawn distances
-            const pawns: Pawn[] = [];
-            this.pawns.forEach((p) => {
-                pawns.push(p);
-            });
-            for (let i = 0; i < pawns.length; i++) {
-                for (let j = i + 1; j < pawns.length; j++) {
-                    const gridDistance = pawns[i].getDistanceToPawn(pawns[j]);
-                    writeNextLine(`${pawns[i].name} -> ${pawns[j].name} = ${gridDistance}`);
-                }
-            }
-        }
 
         // Run stage draw functions
         if (this.stage !== null) {
@@ -311,16 +308,16 @@ export class Game {
 
                         for (const [sourceX, sourceY] of layer) {
 
-                            this.ctx.drawImage(
+                            this.drawToCanvas(
                                 this.stage!.canvas,
-                                sourceX * this.gridSize,
-                                sourceY * this.gridSize,
+                                sourceX,
+                                0,
+                                sourceY,
+                                0,
                                 this.gridSize,
                                 this.gridSize,
-                                Math.round((destinationX * this.gridSize) - (this.camera.position.gridX * this.gridSize)),
-                                Math.round((destinationY * this.gridSize) - (this.camera.position.gridY * this.gridSize)),
-                                this.gridSize,
-                                this.gridSize,
+                                destinationX,
+                                destinationY,
                             );
                             
                         }
@@ -368,16 +365,16 @@ export class Game {
                 const spriteLayers = pawn.getSprite(timestampMs);
                 spriteLayers.forEach((sprite) => {
                     if (sprite === null) return;
-                    this.ctx.drawImage(
+                    this.drawToCanvas(
                         sprite.source,
-                        sprite.x + sprite.offsetX,
-                        sprite.y,
+                        sprite.gridX,
+                        sprite.offsetX,
+                        sprite.gridY,
+                        sprite.offsetY,
                         sprite.width,
                         sprite.height,
-                        Math.round((pawn.position.gridX * this.gridSize) + sprite.offsetX - (this.camera.position.gridX * this.gridSize)),
-                        Math.round((pawn.position.gridY * this.gridSize) + sprite.offsetY - (this.camera.position.gridY * this.gridSize)),
-                        sprite.width,
-                        sprite.height,
+                        pawn.position.gridX,
+                        pawn.position.gridY,
                     );
                 });
             }
@@ -396,6 +393,33 @@ export class Game {
                 }
             }
         });
+
+        // Run development mode draw functions
+        if (this.developmentMode) {
+            // Set up font drawing
+            this.ctx.fillStyle = 'white';
+            this.ctx.font = `${this.gridSize}px "Courier New"`;
+            let lineY = 2;
+            const writeNextLine = (text: string) => {
+                this.ctx.fillText(text, this.gridSize, this.gridSize * lineY++);
+            };
+            
+            // FPS counter
+            writeNextLine(`${this.fps} FPS`);
+
+            // Pawn distances
+            const pawns: Pawn[] = [];
+            this.pawns.forEach((p) => {
+                pawns.push(p);
+            });
+            for (let i = 0; i < pawns.length; i++) {
+                for (let j = i + 1; j < pawns.length; j++) {
+                    const gridDistance = pawns[i].getDistanceToPawn(pawns[j]);
+                    writeNextLine(`${pawns[i].name} -> ${pawns[j].name} = ${gridDistance}`);
+                }
+            }
+        }
+
     }
 
 }
