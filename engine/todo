@@ -1,7 +1,5 @@
 - engine
     - hitbox "groups" so that certain hitboxes can ignore each other
-    - allow Pawns to have a position origin in pixels
-        - this value should be treated as an offset from the top left origin for drawing
     - figure out how to organize class methods that are only to be used by the engine separately from public methods to be used by the game logic
     - dedupe pawn loading if multiple pawns are to use the same config
     - Pawn "animation sets", basically matched sets of animations with the same name but different sprites, that can be switched between
