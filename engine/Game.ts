@@ -64,11 +64,16 @@ export class Game {
         
         // Style canvas
         this.canvas.style.backgroundColor = 'black';
-        this.canvas.width = (options.screenSize?.width ?? window.innerWidth);
-        this.canvas.height = (options.screenSize?.height ??  window.innerHeight);
+        const cssWidth = (options.screenSize?.width ?? window.innerWidth);
+        const cssHeight = (options.screenSize?.height ??  window.innerHeight);
+        this.canvas.style.width = cssWidth + 'px';
+        this.canvas.style.height = cssWidth + 'px';
+        this.canvas.width = cssWidth * window.devicePixelRatio;
+        this.canvas.height = cssHeight * window.devicePixelRatio;
 
         // Disable anti-aliasing
         this.ctx.imageSmoothingEnabled = false;
+        this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
         // Append elements
         this.page.append(this.canvas);
@@ -81,8 +86,8 @@ export class Game {
 
         // Initialize camera
         this.camera = new Camera(this, {
-            width: this.canvas.width,
-            height: this.canvas.height,
+            width: cssWidth,
+            height: cssHeight,
         });
     }
 
