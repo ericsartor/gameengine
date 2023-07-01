@@ -1,17 +1,58 @@
-- create a drawing helper that only takes in grid units and handles things like the camera, pixcel rounding, etc
-    - decide if i want to keep pixel rounding or allow decimal pixels in the destination coordinates for the canvas
-- make the canvas something that can be placed in the page rather than taking over the body
-- hitbox "groups" so that certain hitboxes can ignore each other
-- look into why pawn cant get through 1 grid wide gap in hitboxes (stageTest)
-- look into why pixels arent crisp, i think it's because of decimal pixels (stageTest)
-- allow partial movement when a hitbox would be hit
-- allow Pawns to have a position origin in pixels
-    - hitbox calculations should consider this value
-    - should treat as a negative offset for drawing
-- figure out how to organize class methods that are only to be used by the engine separately from public methods to be used by the game logic
-- dedupe pawn loading if multiple pawns are to use the same config
-- Pawn "animation sets", basically matched sets of animations with the same name but different sprites, that can be switched between
-    - this would be for things like a "runing" vs "walking" animation set that would be toggled on press/release of "shift" for example
+- engine
+    - make the canvas something that can be placed in the page rather than taking over the body
+    - hitbox "groups" so that certain hitboxes can ignore each other
+    - look into why pawn cant get through 1 grid wide gap in hitboxes (stageTest)
+        - this is probably due to not allowing "partial" movement
+    - allow partial movement when a hitbox would be hit
+    - allow Pawns to have a position origin in pixels
+        - this value should be treated as an offset from the top left origin for drawing
+    - figure out how to organize class methods that are only to be used by the engine separately from public methods to be used by the game logic
+    - dedupe pawn loading if multiple pawns are to use the same config
+    - Pawn "animation sets", basically matched sets of animations with the same name but different sprites, that can be switched between
+        - this would be for things like a "runing" vs "walking" animation set that would be toggled on press/release of "shift" for example
+    - Pawns should be able to be chroma keyed dynamically at any time, which would just update the canvas
+        - need to start storing original canvas so we can chroma key it if necessary
+    - Game should have a "setup" function that runs after "start" has completed and eveything has been loaded but before first logic loop
+
+- tooling
+    - separate code into "tools" and "lib" folders
+    - tools
+        - local API server takes request like "create-game", "add-spritesheet", "add-pawn", "add-stage"
+            - create-game
+                - takes a name and a grid size
+                - uses `vite` to create a new project with the provided name with TypeScript as a sibling of the `engine` folder
+                - writes a file called `game-config.json` that keeps details about the game to be used by tooling, like name, grid size, etc
+                - initializes the `main.ts` with some boilerplate code that:
+                    - instantiates a game with specified gridsize
+                    - registers a test pawn with movement controls via logic function
+                    - registers a test stage
+                    - registers some loading callbacks that just print to the console
+                    - starts the game
+            - add-spritesheet
+                - takes a name, gridsize, chroma colors
+                - stores the spritesheet png in the game folder under a "sheets" folder
+                - stores a metadata file with the sheet that could contain information needed in the future, for now just describes width, height, gridsize, chroma colors
+                - these spritesheets can be used for pawn and stages
+            - add-pawn
+                - takes name and metadata in body
+                - creates/updates a metadata file in `pawns` folder of game
+            - add-stage
+                - takes name and metadata in body
+                - creates/updates a metadata file in `stages` folder of game
+        - spritesheet tool
+            - should have some kind of support fpor the chroma keying feature even if you aren't drawing in it directly, you should be able to preview chroma keying to make sure it works
+        - pawn tool
+            - uses game grid size to split up sprite sheets
+            - lets you create animations/animation sets from the sprites sheets with offsets and preview them in engine
+            - lets you set default chroma color if necessary
+            - lets you add hitboxes
+        - stage tool
+            - uses game grid size to split up sprite sheets
+            - lets you create stages from the sprites sheets with offsets and preview them in engine
+            - lets you set default chroma color if necessary
+            - lets you add hitboxes (can be bigger than one grid square)
+            - lets you add "triggers" that game be referenced in game by name rather than location (so you can interact with stage elements rather than pawns)
+            - lets you place pawns with custom names that can be referenced in game (set up NPCs, etc)
 
 - docs
     - inputs
@@ -30,3 +71,7 @@
     - loading
         - how it works
         - loading progress and complete handlers
+    - stages
+        - defaulting
+        - loading
+        - referencing triggers and pawns
