@@ -716,12 +716,14 @@ export class Pawn {
         // Calculate required X movement
         const speedX = this.position.gridX > destinationX ? -gridUnitsPerSecond : gridUnitsPerSecond;
         const diffX = destinationX - this.position.gridX;
-        const newX = this.position.gridX + closerToZero(diffX, (speedX * this.game.deltaSeconds));
+        const desiredMovementX = speedX * this.game.deltaSeconds;
+        const newX = closerToZero(desiredMovementX, diffX) === desiredMovementX ? (this.position.gridX + desiredMovementX) : destinationX;
 
         // Calculate required Y movement
         const speedY = this.position.gridY > destinationY ? -gridUnitsPerSecond : gridUnitsPerSecond;
         const diffY = destinationY - this.position.gridY;
-        const newY = this.position.gridY + closerToZero(diffY, (speedY * this.game.deltaSeconds));
+        const desiredMovementY = speedY * this.game.deltaSeconds;
+        const newY = closerToZero(desiredMovementY, diffY) === desiredMovementY ? (this.position.gridY + desiredMovementY) : destinationY;
 
         // Move
         this.moveTo(newX, newY, true);
