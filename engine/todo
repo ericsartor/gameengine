@@ -1,5 +1,4 @@
 - engine
-    - make the canvas something that can be placed in the page rather than taking over the body
     - hitbox "groups" so that certain hitboxes can ignore each other
     - look into why pawn cant get through 1 grid wide gap in hitboxes (stageTest)
         - this is probably due to not allowing "partial" movement

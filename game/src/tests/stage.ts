@@ -7,13 +7,14 @@ import { centerCameraOnPawn, enableCameraMovementWithArrowKeys } from '../utils/
 export const stageTest = async () => {
     // Create game instance, which will append elements to the body of the page
     const game = new Game({
+        el: '#game',
         gridSize: 16,
         developmentMode: true, // enables overlay which eventually will be customizable
-        screenSize: {
-            width: Math.round(window.innerWidth / 2),
-            height: Math.round(window.innerHeight / 2),
-        },
-        scale: 2,
+        // screenSize: {
+        //     width: Math.round(window.innerWidth / 2),
+        //     height: Math.round(window.innerHeight / 2),
+        // },
+        scale: 3,
     });
 
     addBasicStage(game);

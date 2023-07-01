@@ -10,10 +10,121 @@ type DrawFunction = (timestampMs: number) => void;
 type LoadProgressCallback = (progress: { message: string, current: number, total: number }) => void;
 type LoadCompleteCallback = () => void;
 export class Game {
-    
+
+    // Canvas/elements
+    targetEl: Element;
+    scale: number;
+    canvas = document.createElement('canvas');
+    ctx = this.canvas.getContext('2d')!;
+
+    // Development mode
+    developmentMode: boolean;
+    drawGrid: boolean;
+    fps = '0';
+
+    // Options
+    gridSize;
+
+    // Loop state
+    timestampMs: number = 0;
+    deltaMs: number = 0;
+    deltaSeconds: number = 0;
+
+    input = new InputController();
+    camera: Camera;
+
+    constructor(options: {
+        el: string | Element,
+        developmentMode?: boolean;
+        drawGrid?: boolean;
+        gridSize?: number;
+        scale?: number;
+        inputInits?: InputInit[];
+        // screenSize?: {
+        //     width: number;
+        //     height: number;
+        // },
+    }) {
+        console.log(this);
+        
+        // Set options
+        this.developmentMode = options.developmentMode ?? false;
+        this.drawGrid = options.drawGrid ?? false;
+        this.gridSize = options.gridSize ?? 16;
+        this.scale = options.scale ?? 1;
+
+        // Initialize camera
+        this.camera = new Camera(this, {
+            width: 0,
+            height: 0,
+        });
+
+        // Get target element
+        if (options.el instanceof Element) {
+            this.targetEl = options.el;
+        } else {
+            const maybeEl = document.querySelector(options.el);
+            if (!maybeEl) throw new GameError(`element does not exist with selector ${options.el}`);
+            this.targetEl = maybeEl;
+        }
+
+        // Set up canvas
+        this.canvas.style.backgroundColor = 'black';
+        this.canvas.style.transform = `scale(${this.scale})`;
+        this.canvas.style.transformOrigin = '0 0';
+        this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        this.ctx.imageSmoothingEnabled = false;
+        this.resizeCanvas();
+
+        // Initialize input
+        if (options.inputInits) {
+            this.input.add(options.inputInits);
+        }
+
+        // Append canvas to page
+        this.targetEl.append(this.canvas);
+
+    }
+
+
+    resizeCanvas() {
+        const targetElRect = this.targetEl.getBoundingClientRect();
+        const cssWidth = Math.round(targetElRect.width / this.scale);
+        const cssHeight = Math.round(targetElRect.height / this.scale);
+        this.canvas.style.width = cssWidth + 'px';
+        this.canvas.style.height = cssHeight + 'px';
+        this.canvas.width = cssWidth * window.devicePixelRatio;
+        this.canvas.height = cssHeight * window.devicePixelRatio;
+        this.camera.width = this.canvas.width;
+        this.camera.height = this.canvas.height;
+    }
+
+
+    // User addin methods
+    logicFunctions: LogicFunction[] = [];
+    started = false;
+    registerLogic(func: LogicFunction) {
+        this.logicFunctions.push(func);
+    }
+    drawFunctions: DrawFunction[] = [];
+    registerCustomDraw(func: DrawFunction) {
+        this.drawFunctions.push(func);
+    }
+    inputHandlers: { [inputName: string]: LogicFunction } = {};
+    registerInputHandler(identifierOrName: string, handler: LogicFunction) {
+        if (this.inputHandlers[identifierOrName]) throw new GameError(`already registered input handler for input with name/identifier "${identifierOrName}"`);
+        this.inputHandlers[identifierOrName] = handler;
+    }
+
+
     // Pawns
+    pawnsToLoad: { name: string, filePath: string, initializer?: (p: Pawn) => void }[] = [];
     pawns = new Map<string, Pawn>();
     pawnList: Pawn[] = [];
+    registerPawn(name: string, filePath: string, initializer?: (p: Pawn) => void) {
+        if (this.started) throw new GameError(`tried to register pawn "${name}" after game started`);
+        this.pawnsToLoad.push({ name, filePath, initializer });
+    }
     addPawn(pawn: Pawn) {
         this.pawns.set(pawn.name, pawn);
         this.pawnList.push(pawn);
@@ -22,98 +133,6 @@ export class Game {
         const pawn = this.pawns.get(name);
         if (pawn === undefined) throw new GameError(`addressed non-existent pawn "${name}"`);
         return pawn;
-    }
-
-    // Elements
-    page = document.querySelector<HTMLCanvasElement>('body')!;
-    canvas = document.createElement('canvas');
-    modalContainer = document.createElement('div');
-    ctx = this.canvas.getContext('2d')!;
-
-    // Development mode
-    developmentMode = false;
-    fps = '0';
-
-    // Options
-    gridSize = 16;
-
-    // Loop state
-    timestampMs: number = 0;
-    deltaMs: number = 0;
-    deltaSeconds: number = 0;
-
-    input = new InputController();
-
-    camera: Camera;
-
-    constructor(options: {
-        developmentMode?: boolean;
-        gridSize?: number;
-        scale?: number;
-        inputInits?: InputInit[];
-        screenSize?: {
-            width: number;
-            height: number;
-        },
-    }) {
-        // Set options
-        if (options.developmentMode !== undefined) this.developmentMode = options.developmentMode;
-        if (options.gridSize !== undefined) this.gridSize = options.gridSize;
-
-        const scale = options.scale ?? 1;
-        
-        // Style canvas
-        this.canvas.style.backgroundColor = 'black';
-        this.canvas.style.transform = `scale(${scale})`;
-        const cssWidth = Math.round(options.screenSize?.width ?? window.innerWidth);
-        const cssHeight = Math.round(options.screenSize?.height ??  window.innerHeight);
-        this.canvas.style.width = cssWidth + 'px';
-        this.canvas.style.height = cssHeight + 'px';
-        this.canvas.width = cssWidth * window.devicePixelRatio;
-        this.canvas.height = cssHeight * window.devicePixelRatio;
-
-        // Disable anti-aliasing
-        this.ctx.imageSmoothingEnabled = false;
-        this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-
-        // Append elements
-        this.page.append(this.canvas);
-        this.page.append(this.modalContainer);
-
-        // Initialize input
-        if (options.inputInits) {
-            this.input.add(options.inputInits);
-        }
-
-        // Initialize camera
-        this.camera = new Camera(this, {
-            width: cssWidth,
-            height: cssHeight,
-        });
-    }
-
-
-
-    // User addin methods
-    logicFunctions: LogicFunction[] = [];
-    inputHandlers: { [inputName: string]: LogicFunction } = {};
-    drawFunctions: DrawFunction[] = [];
-    pawnsToLoad: { name: string, filePath: string, initializer?: (p: Pawn) => void }[] = [];
-    inputMapToLoad: string | null = null;
-    started = false;
-    registerLogic(func: LogicFunction) {
-        this.logicFunctions.push(func);
-    }
-    registerCustomDraw(func: DrawFunction) {
-        this.drawFunctions.push(func);
-    }
-    registerPawn(name: string, filePath: string, initializer?: (p: Pawn) => void) {
-        if (this.started) throw new GameError(`tried to register pawn "${name}" after game started`);
-        this.pawnsToLoad.push({ name, filePath, initializer });
-    }
-    registerInputHandler(identifierOrName: string, handler: LogicFunction) {
-        if (this.inputHandlers[identifierOrName]) throw new GameError(`already registered input handler for input with name/identifier "${identifierOrName}"`);
-        this.inputHandlers[identifierOrName] = handler;
     }
 
     
@@ -126,6 +145,7 @@ export class Game {
     stage: Stage | null = null;
     stages = new Map<string, Stage>();
     registerStage(name: string, filePath: string, loadByDefault: boolean) {
+        if (this.started) throw new GameError(`tried to register stage "${name}" after game started`);
         this.stagesToLoad.push({ name, filePath, loadByDefault });
     }
     addStage(name: string, stage: Stage) {
@@ -331,8 +351,8 @@ export class Game {
             // Draw hitbox
             if (this.developmentMode) {
                 this.stage.hitboxes.forEach((hitBox) => {
-                    this.ctx.strokeStyle = 'red';
-                    this.ctx.strokeRect(
+                    this.ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+                    this.ctx.fillRect(
                         Math.round((hitBox.gridX * this.gridSize) - (this.camera.position.gridX * this.gridSize)),
                         Math.round((hitBox.gridY * this.gridSize) - (this.camera.position.gridY * this.gridSize)),
                         hitBox.gridWidth * this.gridSize,
@@ -383,8 +403,8 @@ export class Game {
             if (this.developmentMode) {
                 const hitBox = pawn.getHitBox();
                 if (hitBox !== null) {
-                    this.ctx.strokeStyle = 'red';
-                    this.ctx.strokeRect(
+                    this.ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+                    this.ctx.fillRect(
                         (hitBox.gridX * this.gridSize) - (this.camera.position.gridX * this.gridSize),
                         (hitBox.gridY * this.gridSize) - (this.camera.position.gridY * this.gridSize),
                         hitBox.gridWidth * this.gridSize,
@@ -396,6 +416,34 @@ export class Game {
 
         // Run development mode draw functions
         if (this.developmentMode) {
+            // Draw grid
+            if (this.drawGrid) {
+
+                const cameraX = this.camera.position.gridX;
+                const cameraXRemainder = cameraX - Math.round(cameraX);
+                const cameraY = this.camera.position.gridY;
+                const cameraYRemainder = cameraY - Math.round(cameraY);
+                const xStart = 0 - cameraXRemainder;
+                const xEnd = xStart + this.camera.gridWidth;
+                const yStart = 0 - cameraYRemainder;
+                const yEnd = yStart + this.camera.gridHeight;
+                for (let destinationX = xStart; destinationX < xEnd; destinationX++) {
+                    for (let destinationY = yStart; destinationY < yEnd; destinationY++) {
+    
+                        this.ctx.strokeStyle = 'pink';
+                        this.ctx.strokeRect(
+                            Math.round(destinationX * this.gridSize),
+                            Math.round(destinationY * this.gridSize),
+                            this.gridSize,
+                            this.gridSize,
+                        );
+    
+                    }
+    
+                }
+                
+            }
+
             // Set up font drawing
             this.ctx.fillStyle = 'white';
             this.ctx.font = `${this.gridSize}px "Courier New"`;

@@ -10,6 +10,7 @@ type CameraInit = {
 
 export class Camera {
 
+    game: Game;
     position: GridCoord = { gridX: 0, gridY: 0 };
     gridWidth: number;
     gridHeight: number;
@@ -18,7 +19,14 @@ export class Camera {
         if (init.position) this.position = init.position;
         this.gridWidth = init.width / game.gridSize;
         this.gridHeight = init.height / game.gridSize;
+        this.game = game;
 
+    }
+    set width(w: number) {
+        this.gridWidth = w / this.game.gridSize;
+    }
+    set height(h: number) {
+        this.gridHeight = h / this.game.gridSize;
     }
 
     moveTo(x: number, y: number) {
