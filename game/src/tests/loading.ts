@@ -1,13 +1,13 @@
-import { Game } from "../../../engine/Game";
+import { Game } from '../../../engine/Game';
 
 const game = new Game({
-    gridSize: 16,
-    developmentMode: true, // enables overlay which eventually will be customizable
+	gridSize: 16,
+	developmentMode: true, // enables overlay which eventually will be customizable
 });
 
 game.onLoadProgress((progress) => {
-    console.log(progress.message, progress.current, progress.total);
+	console.log(progress.message, progress.current, progress.total);
 });
 game.onLoadComplete(() => {
-    console.log('load complete');
+	console.log('load complete');
 });

@@ -1,4 +1,4 @@
 export type GridCoord = {
-    gridX: number;
-    gridY: number;
+	gridX: number;
+	gridY: number;
 };
