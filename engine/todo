@@ -7,6 +7,7 @@
     - Pawns should be able to be chroma keyed dynamically at any time, which would just update the canvas
         - need to start storing original canvas so we can chroma key it if necessary
     - Game should have a "setup" function that runs after "start" has completed and eveything has been loaded but before first logic loop
+    - Pawn registering should hold a canonical default version of that pawn, then make you "create" pawns from that default instance`
 
 - tooling
     - separate code into "tools" and "lib" folders
