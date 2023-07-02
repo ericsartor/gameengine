@@ -16,6 +16,7 @@
   - stage doesnt need "layers", only three nested arrays, [column, cell, things to draw]
   - camera zooming
   - smooth camera movements (go from here to there over this time)
+  - scaling with CSS is causing text to be huge, so we may want to try doing the scaling in the draw function, especially since it would work similarly to zoom function for the camera anyways
 
 - tooling
 
