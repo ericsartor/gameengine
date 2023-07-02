@@ -2,7 +2,7 @@ import zod from 'zod';
 import { GameError } from './errors';
 import { Game } from './Game';
 import { GridCoord } from './types.ts';
-import { GridBox, GridPosition, closerToZero, doBoxesOverlap } from './utils.ts';
+import { GridBox, GridPosition, closerToNumber, closerToZero, doBoxesOverlap } from './utils.ts';
 
 const zPawn = zod.object({
     sheets: zod.array(zod.object({
@@ -586,18 +586,28 @@ export class Pawn {
                                 // Moving right
                                 const otherLeft = conflictingHitBox.gridX;
                                 const thisRight = unmovedHitBox.gridX + unmovedHitBox.gridWidth;
-                                if (otherLeft < thisRight) return false;
-                                const partialX = otherLeft - thisRight;
-                                if (partialX === 0) return false; // Can't even do partial movement, this strategy won't work
-                                minPartialX = closerToZero(partialX, minPartialX);
+                                if (otherLeft > thisRight) {
+                                    minPartialX = closerToNumber(
+                                        unmovedHitBox.gridX,
+                                        otherLeft - unmovedHitBox.gridWidth,
+                                        minPartialX
+                                    );
+                                } else {
+                                    return false;
+                                }
                             } else if (diff < 0) {
                                 // Moving left
                                 const otherRight = conflictingHitBox.gridX + conflictingHitBox.gridWidth;
                                 const thisLeft = unmovedHitBox.gridX;
-                                if (otherRight < thisLeft) return false;
-                                const partialX = otherRight - thisLeft;
-                                if (partialX === 0) return false; // Can't even do partial movement, this strategy won't work
-                                minPartialX = closerToZero(partialX, minPartialX);
+                                if (otherRight < thisLeft) {
+                                    minPartialX = closerToNumber(
+                                        thisLeft,
+                                        otherRight,
+                                        minPartialX,
+                                    );
+                                } else {
+                                    return false;
+                                }
                             }
                         }
                         if (strategyMovement.gridY !== undefined) {
@@ -606,18 +616,28 @@ export class Pawn {
                                 // Moving down
                                 const otherTop = conflictingHitBox.gridY;
                                 const thisBottom = unmovedHitBox.gridY + unmovedHitBox.gridHeight;
-                                if (otherTop < thisBottom) return false;
-                                const partialY = otherTop - thisBottom;
-                                if (partialY === 0) return false; // Can't even do partial movement, this strategy won't work
-                                minPartialY = closerToZero(partialY, minPartialY);
+                                if (otherTop > thisBottom) {
+                                    minPartialY = closerToNumber(
+                                        unmovedHitBox.gridY,
+                                        otherTop - unmovedHitBox.gridHeight,
+                                        minPartialY,
+                                    );
+                                } else {
+                                    return false;
+                                }
                             } else if (diff < 0) {
                                 // Moving up
                                 const otherBottom = conflictingHitBox.gridY + conflictingHitBox.gridHeight;
                                 const thisTop = unmovedHitBox.gridY;
-                                if (otherBottom < thisTop) return false;
-                                const partialY = otherBottom - thisTop;
-                                if (partialY === 0) return false; // Can't even do partial movement, this strategy won't work
-                                minPartialY = closerToZero(partialY, minPartialY);
+                                if (otherBottom < thisTop) {
+                                    minPartialY = closerToNumber(
+                                        thisTop,
+                                        otherBottom,
+                                        minPartialY,
+                                    );
+                                } else {
+                                    return false;
+                                }
                             }
 
                         }
@@ -666,9 +686,9 @@ export class Pawn {
             
                     // Track the succesful movement
                     successes++;
-                    if (minPartialX !== Infinity) strategyPosition.gridX += minPartialX;
+                    if (minPartialX !== Infinity) strategyPosition.gridX = minPartialX;
                     else if (strategyMovement.gridX !== undefined) strategyPosition.gridX = strategyMovement.gridX;
-                    if (minPartialY !== Infinity) strategyPosition.gridY += minPartialY;
+                    if (minPartialY !== Infinity) strategyPosition.gridY = minPartialY;
                     else if (strategyMovement.gridY !== undefined) strategyPosition.gridY = strategyMovement.gridY;
     
                 }

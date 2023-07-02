@@ -42,6 +42,12 @@ export const doBoxesOverlap = (box1: GridBox, box2: GridBox) => {
     }
 };
 
+export const closerToNumber = (target: number, a: number, b: number) => {
+    const aDiff = Math.abs(a - target);
+    const bDiff = Math.abs(b - target);
+    return aDiff < bDiff ? a : b;
+};
+
 export const closerToZero = (a: number, b: number) => {
     return Math.abs(a) < Math.abs(b) ? a : b;
 };

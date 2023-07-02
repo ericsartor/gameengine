@@ -462,6 +462,7 @@ export class Game {
             const pawns: Pawn[] = [];
             this.pawns.forEach((p) => {
                 pawns.push(p);
+                writeNextLine(`${p.name}: ${p.position.gridX.toFixed(20)}, ${p.position.gridY.toFixed(20)}`);
             });
             for (let i = 0; i < pawns.length; i++) {
                 for (let j = i + 1; j < pawns.length; j++) {
