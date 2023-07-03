@@ -42,6 +42,23 @@ export const doBoxesOverlap = (box1: GridBox, box2: GridBox) => {
 	}
 };
 
+// This can be used to achieve consistent movement speed
+export const adjustDiagonalDistance = (
+	xDistance: number,
+	yDistance: number,
+	maxDistance: number,
+): [number, number] => {
+	if (xDistance !== 0 && yDistance !== 0) {
+		const hypotenuse = Math.sqrt(xDistance ** 2 + yDistance ** 2);
+		const xPercent = Math.abs(xDistance) / Math.abs(maxDistance);
+		const yPercent = Math.abs(yDistance) / Math.abs(maxDistance);
+		const averagePercent = (xPercent + yPercent) / 2;
+		const reductionRatio = (maxDistance * averagePercent) / hypotenuse;
+		return [xDistance * reductionRatio, yDistance * reductionRatio];
+	}
+	return [xDistance, yDistance];
+};
+
 export const closerToNumber = (target: number, a: number, b: number) => {
 	const aDiff = Math.abs(a - target);
 	const bDiff = Math.abs(b - target);

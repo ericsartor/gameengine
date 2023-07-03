@@ -2,7 +2,13 @@ import zod from 'zod';
 import { GameError } from './errors';
 import { Game } from './Game';
 import { GridCoord } from './types';
-import { GridBox, GridPosition, closerToNumber, closerToZero, doBoxesOverlap } from './utils';
+import {
+	GridBox,
+	GridPosition,
+	adjustDiagonalDistance,
+	closerToNumber,
+	doBoxesOverlap,
+} from './utils';
 
 const zPawn = zod.object({
 	sheets: zod.array(
@@ -777,26 +783,31 @@ export class Pawn {
 		return this.moveTo(this.position.gridX + changeX, this.position.gridY + changeY, true);
 	}
 	moveTowards(destinationX: number, destinationY: number, gridUnitsPerSecond: number) {
-		// Calculate required X movement
-		const speedX = this.position.gridX > destinationX ? -gridUnitsPerSecond : gridUnitsPerSecond;
-		const diffX = destinationX - this.position.gridX;
-		const desiredMovementX = speedX * this.game.deltaSeconds;
-		const newX =
-			closerToZero(desiredMovementX, diffX) === desiredMovementX
-				? this.position.gridX + desiredMovementX
-				: destinationX;
+		const maxDistance = gridUnitsPerSecond * this.game.deltaSeconds;
 
-		// Calculate required Y movement
-		const speedY = this.position.gridY > destinationY ? -gridUnitsPerSecond : gridUnitsPerSecond;
-		const diffY = destinationY - this.position.gridY;
-		const desiredMovementY = speedY * this.game.deltaSeconds;
-		const newY =
-			closerToZero(desiredMovementY, diffY) === desiredMovementY
-				? this.position.gridY + desiredMovementY
-				: destinationY;
+		// Calculate required X movement
+		const xDistance =
+			this.position.gridX === destinationX
+				? 0
+				: this.position.gridX > destinationX
+				? -maxDistance
+				: maxDistance;
+		const yDistance =
+			this.position.gridY === destinationY
+				? 0
+				: this.position.gridY > destinationY
+				? -maxDistance
+				: maxDistance;
+		const [xMovement, yMovement] = adjustDiagonalDistance(xDistance, yDistance, maxDistance);
+		const newX = this.position.gridX + xMovement;
+		const newY = this.position.gridY + yMovement;
 
 		// Move
-		this.moveTo(newX, newY, true);
+		this.moveTo(
+			xDistance < 0 ? Math.max(newX, destinationX) : Math.min(newX, destinationX),
+			yDistance < 0 ? Math.max(newY, destinationY) : Math.min(newY, destinationY),
+			true,
+		);
 	}
 
 	// Pathing
