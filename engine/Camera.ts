@@ -11,19 +11,26 @@ type CameraInit = {
 export class Camera {
 	game: Game;
 	position: GridCoord = { gridX: 0, gridY: 0 };
-	gridWidth: number;
-	gridHeight: number;
 	constructor(game: Game, init: CameraInit) {
 		if (init.position) this.position = init.position;
-		this.gridWidth = init.width / game.gridSize;
-		this.gridHeight = init.height / game.gridSize;
 		this.game = game;
 	}
-	set width(w: number) {
-		this.gridWidth = w / this.game.gridSize;
+
+	get gridWidth() {
+		return this.game.canvas.width / (this.game.gridSize * this.game.scale * this.zoom);
 	}
-	set height(h: number) {
-		this.gridHeight = h / this.game.gridSize;
+	get gridHeight() {
+		return this.game.canvas.height / (this.game.gridSize * this.game.scale * this.zoom);
+	}
+
+	zoom = 1;
+	nextZoom = 1;
+	setZoom(zoom: number) {
+		if (zoom <= 0) return;
+		this.nextZoom = zoom;
+	}
+	changeZoom(change: number) {
+		this.setZoom(this.zoom + change);
 	}
 
 	moveTo(x: number, y: number) {
@@ -35,8 +42,8 @@ export class Camera {
 	}
 	centerOn(box: GridBox) {
 		this.moveTo(
-			box.gridX - (this.gridWidth - box.gridWidth) / 2,
-			box.gridY - (this.gridHeight - box.gridHeight) / 2,
+			box.gridX - this.gridWidth / 2 + box.gridWidth / 2,
+			box.gridY - this.gridHeight / 2 + box.gridHeight / 2,
 		);
 	}
 }

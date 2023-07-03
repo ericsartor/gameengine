@@ -69,10 +69,6 @@ export class Game {
 
 		// Set up canvas
 		this.canvas.style.backgroundColor = 'black';
-		this.canvas.style.transform = `scale(${this.scale})`;
-		this.canvas.style.transformOrigin = '0 0';
-		this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-		this.ctx.imageSmoothingEnabled = false;
 		this.resizeCanvas();
 		window.addEventListener('resize', () => {
 			this.resizeCanvas();
@@ -89,14 +85,14 @@ export class Game {
 
 	resizeCanvas() {
 		const targetElRect = this.targetEl.getBoundingClientRect();
-		const cssWidth = Math.round(targetElRect.width / this.scale);
-		const cssHeight = Math.round(targetElRect.height / this.scale);
+		const cssWidth = Math.round(targetElRect.width);
+		const cssHeight = Math.round(targetElRect.height);
 		this.canvas.style.width = cssWidth + 'px';
 		this.canvas.style.height = cssHeight + 'px';
 		this.canvas.width = cssWidth * window.devicePixelRatio;
 		this.canvas.height = cssHeight * window.devicePixelRatio;
-		this.camera.width = this.canvas.width;
-		this.camera.height = this.canvas.height;
+		// this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+		this.ctx.imageSmoothingEnabled = false;
 	}
 
 	// User addin methods
@@ -291,6 +287,7 @@ export class Game {
 		destinationX: number,
 		destinationY: number,
 	) {
+		const scale = this.scale * this.camera.zoom;
 		this.ctx.drawImage(
 			source,
 			sourceX * this.gridSize,
@@ -298,21 +295,28 @@ export class Game {
 			sourceWidth,
 			sourceHeight,
 			Math.round(
-				destinationX * this.gridSize + sourceXOffset - this.camera.position.gridX * this.gridSize,
+				destinationX * this.gridSize * scale +
+					sourceXOffset * scale -
+					this.camera.position.gridX * this.gridSize * scale,
 			),
 			Math.round(
-				destinationY * this.gridSize + sourceYOffset - this.camera.position.gridY * this.gridSize,
+				destinationY * this.gridSize * scale +
+					sourceYOffset * scale -
+					this.camera.position.gridY * this.gridSize * scale,
 			),
-			sourceWidth,
-			sourceHeight,
+			Math.round(sourceWidth * scale),
+			Math.round(sourceHeight * scale),
 		);
 	}
 	private draw(timestampMs: number) {
 		// Prepare for next frame
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		this.camera.zoom = this.camera.nextZoom;
+		const scale = this.scale * this.camera.zoom;
 
 		// Run stage draw functions
 		if (this.stage !== null) {
+			const stage = this.stage;
 			// Draw stage tiles
 			const xStart = Math.max(0, Math.floor(this.camera.position.gridX));
 			const xEnd = xStart + this.camera.gridWidth + 1;
@@ -321,28 +325,23 @@ export class Game {
 				const yEnd = yStart + this.camera.gridHeight + 1;
 				for (let destinationY = yStart; destinationY < yEnd; destinationY++) {
 					// Get layers for this cell if it/they exist
-					const layers = this.stage.grid[destinationX]?.[destinationY];
+					const coords = stage.grid[destinationX]?.[destinationY];
 
 					// Nothing left in this row
-					if (!layers) break;
+					if (!coords) break;
 
-					// Nothing in this layer, but potentially more in the row
-					if (layers.length === 0) continue;
-
-					for (const layer of layers) {
-						for (const [sourceX, sourceY] of layer) {
-							this.drawToCanvas(
-								this.stage!.canvas,
-								sourceX,
-								0,
-								sourceY,
-								0,
-								this.gridSize,
-								this.gridSize,
-								destinationX,
-								destinationY,
-							);
-						}
+					for (const [sourceX, sourceY] of coords) {
+						this.drawToCanvas(
+							stage.canvas,
+							sourceX,
+							0,
+							sourceY,
+							0,
+							this.gridSize,
+							this.gridSize,
+							destinationX,
+							destinationY,
+						);
 					}
 				}
 			}
@@ -352,10 +351,16 @@ export class Game {
 				this.stage.hitboxes.forEach((hitBox) => {
 					this.ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
 					this.ctx.fillRect(
-						Math.round(hitBox.gridX * this.gridSize - this.camera.position.gridX * this.gridSize),
-						Math.round(hitBox.gridY * this.gridSize - this.camera.position.gridY * this.gridSize),
-						hitBox.gridWidth * this.gridSize,
-						hitBox.gridHeight * this.gridSize,
+						Math.round(
+							hitBox.gridX * this.gridSize * scale -
+								this.camera.position.gridX * this.gridSize * scale,
+						),
+						Math.round(
+							hitBox.gridY * this.gridSize * scale -
+								this.camera.position.gridY * this.gridSize * scale,
+						),
+						hitBox.gridWidth * this.gridSize * scale,
+						hitBox.gridHeight * this.gridSize * scale,
 					);
 				});
 			}
@@ -373,15 +378,15 @@ export class Game {
 				this.ctx.fillStyle = 'yellow';
 				this.ctx.fillRect(
 					Math.round(
-						(pawn.position.gridX - pawn.origin.gridX) * this.gridSize -
-							this.camera.position.gridX * this.gridSize,
+						(pawn.position.gridX - pawn.origin.gridX) * this.gridSize * scale -
+							this.camera.position.gridX * this.gridSize * scale,
 					),
 					Math.round(
-						(pawn.position.gridY - pawn.origin.gridY) * this.gridSize -
-							this.camera.position.gridY * this.gridSize,
+						(pawn.position.gridY - pawn.origin.gridY) * this.gridSize * scale -
+							this.camera.position.gridY * this.gridSize * scale,
 					),
-					pawn.width,
-					pawn.height,
+					pawn.width * scale,
+					pawn.height * scale,
 				);
 			}
 
@@ -410,10 +415,12 @@ export class Game {
 				if (hitBox !== null) {
 					this.ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
 					this.ctx.fillRect(
-						hitBox.gridX * this.gridSize - this.camera.position.gridX * this.gridSize,
-						hitBox.gridY * this.gridSize - this.camera.position.gridY * this.gridSize,
-						hitBox.gridWidth * this.gridSize,
-						hitBox.gridHeight * this.gridSize,
+						hitBox.gridX * this.gridSize * scale -
+							this.camera.position.gridX * this.gridSize * scale,
+						hitBox.gridY * this.gridSize * scale -
+							this.camera.position.gridY * this.gridSize * scale,
+						hitBox.gridWidth * this.gridSize * scale,
+						hitBox.gridHeight * this.gridSize * scale,
 					);
 				}
 			}
@@ -435,10 +442,10 @@ export class Game {
 					for (let destinationY = yStart; destinationY < yEnd; destinationY++) {
 						this.ctx.strokeStyle = 'pink';
 						this.ctx.strokeRect(
-							Math.round(destinationX * this.gridSize),
-							Math.round(destinationY * this.gridSize),
-							this.gridSize,
-							this.gridSize,
+							Math.round(destinationX * this.gridSize * scale),
+							Math.round(destinationY * this.gridSize * scale),
+							this.gridSize * scale,
+							this.gridSize * scale,
 						);
 					}
 				}

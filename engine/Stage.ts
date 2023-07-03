@@ -14,7 +14,7 @@ const zStage = zod.object({
 			gridHeight: zod.number(),
 		}),
 	),
-	grid: zod.array(zod.array(zod.array(zod.array(zod.tuple([zod.number(), zod.number()]))))),
+	grid: zod.array(zod.array(zod.array(zod.tuple([zod.number(), zod.number()])))),
 });
 
 export const loadStageFromFile = async (name: string, filePath: string, game: Game) => {
@@ -43,7 +43,7 @@ export const loadStageFromFile = async (name: string, filePath: string, game: Ga
 export type StageInit = {
 	hitboxes: GridBox[];
 	spritesheet: string;
-	grid: [number, number][][][][]; // Column (x), cell (y), layers, spritesheet coordinates
+	grid: [number, number][][][]; // Column (x), cell (y), layers, spritesheet coordinates
 };
 
 export class Stage {
@@ -51,7 +51,7 @@ export class Stage {
 	game: Game;
 	hitboxes: GridBox[];
 	spritesheet: string;
-	grid: [number, number][][][][];
+	grid: [number, number][][][];
 	canvas: HTMLCanvasElement = document.createElement('canvas');
 	context: CanvasRenderingContext2D = this.canvas.getContext('2d')!;
 

@@ -34,6 +34,9 @@ export class InputController {
 				input.names.forEach((name) => {
 					controller.buffer.add(name);
 				});
+				input.names.forEach((name) => {
+					controller.buffer.add(name);
+				});
 			}
 		});
 	}
