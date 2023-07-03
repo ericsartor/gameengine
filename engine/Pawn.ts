@@ -804,8 +804,16 @@ export class Pawn {
 
 		// Move
 		this.moveTo(
-			xDistance < 0 ? Math.max(newX, destinationX) : Math.min(newX, destinationX),
-			yDistance < 0 ? Math.max(newY, destinationY) : Math.min(newY, destinationY),
+			xDistance === 0
+				? this.position.gridX
+				: xDistance < 0
+				? Math.max(newX, destinationX)
+				: Math.min(newX, destinationX),
+			yDistance === 0
+				? this.position.gridY
+				: yDistance < 0
+				? Math.max(newY, destinationY)
+				: Math.min(newY, destinationY),
 			true,
 		);
 	}
