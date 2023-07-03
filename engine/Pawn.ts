@@ -1,8 +1,8 @@
 import zod from 'zod';
 import { GameError } from './errors';
 import { Game } from './Game';
-import { GridCoord } from './types.ts';
-import { GridBox, GridPosition, closerToNumber, closerToZero, doBoxesOverlap } from './utils.ts';
+import { GridCoord } from './types';
+import { GridBox, GridPosition, closerToNumber, closerToZero, doBoxesOverlap } from './utils';
 
 const zPawn = zod.object({
 	sheets: zod.array(

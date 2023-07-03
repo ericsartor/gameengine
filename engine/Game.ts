@@ -1,8 +1,8 @@
-import { Pawn, loadPawnFromFile } from './Pawn.ts';
-import { InputController, InputInit } from './Input.ts';
-import { GameError } from './errors.ts';
-import { Stage, StageInit, loadStageFromFile } from './Stage.ts';
-import { ONE_MINUTE } from './numbers.ts';
+import { Pawn, loadPawnFromFile } from './Pawn';
+import { InputController, InputInit } from './Input';
+import { GameError } from './errors';
+import { Stage, StageInit, loadStageFromFile } from './Stage';
+import { ONE_MINUTE } from './numbers';
 import { Camera } from './Camera';
 
 type LogicFunction = (deltaMs: number, timestampMs: number) => void;
