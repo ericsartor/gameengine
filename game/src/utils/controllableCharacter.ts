@@ -17,7 +17,8 @@ export const addControllablePawn = (game: Game, pawnName?: string) => {
 
 		let xMovement = 0;
 		let yMovement = 0;
-		const maxDistance = deltaSeconds * 4;
+		const speed = 4;
+		const maxDistance = deltaSeconds * speed;
 
 		let input = game.input.get('RunNorth');
 		if (input.pressed) {
@@ -51,8 +52,8 @@ export const addControllablePawn = (game: Game, pawnName?: string) => {
 		}
 		if (animationToPlay !== 'Idle') p.setAnimation(animationToPlay, timestampMs);
 		else p.stopAnimation();
-		game
-			.getPawn(definedPawnName)
-			.moveRelative(...adjustDiagonalDistance(xMovement, yMovement, maxDistance));
+		const newX = p.position.gridX + xMovement;
+		const newY = p.position.gridY + yMovement;
+		p.moveTowards(newX, newY, 4);
 	});
 };
