@@ -167,6 +167,8 @@ export class Game {
 		this.loadCompleteCallback = callback;
 	}
 	async start() {
+		if (this.started) throw new GameError('game has already started');
+
 		// Load and create stages
 		if (this.loadProgressCallback !== null) {
 			this.loadProgressCallback({
@@ -311,7 +313,6 @@ export class Game {
 	private draw(timestampMs: number) {
 		// Prepare for next frame
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		this.camera.zoom = this.camera.nextZoom;
 		const scale = this.scale * this.camera.zoom;
 
 		// Run stage draw functions
@@ -477,5 +478,8 @@ export class Game {
 				}
 			}
 		}
+
+		// Update camera zoom cleanly after having drawn everything, for some reason updating it before drawing doesn't work
+		this.camera.zoom = this.camera.nextZoom;
 	}
 }

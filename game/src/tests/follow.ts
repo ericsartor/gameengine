@@ -32,9 +32,13 @@ export const followerTest = async () => {
 	addControllablePawn(game, playerPawnName);
 	centerCameraOnPawn(game, playerPawnName);
 
-	game.registerLogic(() => {
-		if (game.input.buffer.has('CameraZoomIn')) game.camera.changeZoom(0.25);
-		if (game.input.buffer.has('CameraZoomOut')) game.camera.changeZoom(-0.25);
+	game.registerLogic((deltaMs) => {
+		const deltaSeconds = deltaMs / 1000;
+		const step = 0.01;
+		// if (game.input.buffer.has('CameraZoomIn')) game.camera.changeZoom(step);
+		// if (game.input.buffer.has('CameraZoomOut')) game.camera.changeZoom(-step);
+		if (game.input.get('CameraZoomIn').pressed) game.camera.changeZoom(deltaSeconds);
+		if (game.input.get('CameraZoomOut').pressed) game.camera.changeZoom(-deltaSeconds);
 	});
 
 	// game.registerPawn('follower', '/testdata/player-test-static-hitbox.json', (pawn) => {
