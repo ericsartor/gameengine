@@ -8,15 +8,13 @@
         - need to start storing original canvas so we can chroma key it if necessary
     - Game should have a "setup" function that runs after "start" has completed and eveything has been loaded but before first logic loop
     - Pawn registering should hold a canonical default version of that pawn, then make you "create" pawns from that default instance`
-  - Inputs should allow for multiple identifiers so that rebinding isnt always necessary between keyboard and controller, etc
-  - animations within pawns should have their own origin, pawns themselves do not need an origin
-  - pawn should be able to be just a static image with no animations
-  - pawn map should throw on conflicting name
-  - stage metadata should support multiple sheets, the cell layers should be three numbers, [sheetIndex, x, y]
-  - stage doesnt need "layers", only three nested arrays, [column, cell, things to draw]
-  - camera zooming
-  - smooth camera movements (go from here to there over this time)
-  - scaling with CSS is causing text to be huge, so we may want to try doing the scaling in the draw function, especially since it would work similarly to zoom function for the camera anyways
+    - Inputs should allow for multiple identifiers so that rebinding isnt always necessary between keyboard and controller, etc
+    - animations within pawns should have their own origin, pawns themselves do not need an origin
+    - pawn should be able to be just a static image with no animations
+    - pawn map should throw on conflicting name
+    - stage metadata should support multiple sheets, the cell layers should be three numbers, [sheetIndex, x, y]
+    - stage doesnt need "layers", only three nested arrays, [column, cell, things to draw]
+    - smooth camera movements (go from here to there over this time)
 
 - tooling
 
