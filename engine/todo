@@ -15,6 +15,7 @@
     - stage metadata should support multiple sheets, the cell layers should be three numbers, [sheetIndex, x, y]
     - stage doesnt need "layers", only three nested arrays, [column, cell, things to draw]
     - smooth camera movements (go from here to there over this time)
+    - "nudge" hitboxes that, when collided with, convert the movement they are preventing into a different axis so that you slide along them without explicitly moving in that direction
 
 - tooling
 
