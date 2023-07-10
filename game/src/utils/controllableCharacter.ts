@@ -1,13 +1,12 @@
 import { Game } from '../../../engine/Game';
-import { adjustDiagonalDistance } from '../../../engine/utils';
 
-export const addControllablePawn = (game: Game, pawnName?: string) => {
+export const addControllablePawn = (game: Game, pawnName?: string, pawnFile?: string) => {
 	const definedPawnName = pawnName ?? 'controllable-pawn';
-	game.input.remap('RunNorth', 'KeyW');
-	game.input.remap('RunEast', 'KeyD');
-	game.input.remap('RunSouth', 'KeyS');
-	game.input.remap('RunWest', 'KeyA');
-	game.registerPawn(definedPawnName, '/testdata/player-test-static-hitbox.json');
+	game.input.remap('MoveNorth', 'KeyW');
+	game.input.remap('MoveEast', 'KeyD');
+	game.input.remap('MoveSouth', 'KeyS');
+	game.input.remap('MoveWest', 'KeyA');
+	game.registerPawn(definedPawnName, pawnFile ?? '/testdata/player-test-static-hitbox.json');
 	game.registerLogic((deltaMs: number, timestampMs: number) => {
 		const deltaSeconds = deltaMs / 1000;
 		const p = game.getPawn(definedPawnName);
@@ -20,33 +19,33 @@ export const addControllablePawn = (game: Game, pawnName?: string) => {
 		const speed = 4;
 		const maxDistance = deltaSeconds * speed;
 
-		let input = game.input.get('RunNorth');
+		let input = game.input.get('MoveNorth');
 		if (input.pressed) {
 			yMovement -= input.value * maxDistance;
-			animationToPlay = 'RunNorth';
+			animationToPlay = 'MoveNorth';
 			pressedInputTimestamp = input.timestampMs;
 		}
-		input = game.input.get('RunSouth');
+		input = game.input.get('MoveSouth');
 		if (input.pressed) {
 			yMovement += input.value * maxDistance;
 			if (input.timestampMs < pressedInputTimestamp) {
-				animationToPlay = 'RunSouth';
+				animationToPlay = 'MoveSouth';
 				pressedInputTimestamp = input.timestampMs;
 			}
 		}
-		input = game.input.get('RunWest');
+		input = game.input.get('MoveWest');
 		if (input.pressed) {
 			xMovement -= input.value * maxDistance;
 			if (input.timestampMs < pressedInputTimestamp) {
-				animationToPlay = 'RunWest';
+				animationToPlay = 'MoveWest';
 				pressedInputTimestamp = input.timestampMs;
 			}
 		}
-		input = game.input.get('RunEast');
+		input = game.input.get('MoveEast');
 		if (input.pressed) {
 			xMovement += input.value * maxDistance;
 			if (input.timestampMs < pressedInputTimestamp) {
-				animationToPlay = 'RunEast';
+				animationToPlay = 'MoveEast';
 				pressedInputTimestamp = input.timestampMs;
 			}
 		}
