@@ -1,11 +1,38 @@
 {
 	"sheets": [
-		{ "url": "/testdata/body.png", "chromaKey": { "red": null, "green": "#E39FF6", "blue": null } },
+		{
+			"url": "/testdata/body.png",
+			"chromaKey": {
+				"red": null,
+				"green": "#E39FF6",
+				"blue": null,
+				"magenta": null,
+				"yellow": null,
+				"cyan": null
+			}
+		},
 		{
 			"url": "/testdata/head.png",
-			"chromaKey": { "red": null, "green": "#E39FF6", "blue": "#4B0076" }
+			"chromaKey": {
+				"red": null,
+				"green": "#E39FF6",
+				"blue": "#4B0076",
+				"magenta": null,
+				"yellow": null,
+				"cyan": null
+			}
 		},
-		{ "url": "/testdata/hair.png", "chromaKey": { "red": "#00CCCC", "green": null, "blue": null } }
+		{
+			"url": "/testdata/hair.png",
+			"chromaKey": {
+				"red": "#00CCCC",
+				"green": null,
+				"blue": null,
+				"magenta": null,
+				"yellow": null,
+				"cyan": null
+			}
+		}
 	],
 	"width": 16,
 	"height": 32,

@@ -20,6 +20,9 @@ const zPawn = zod.object({
 					red: zod.union([zod.null(), zod.string()]),
 					green: zod.union([zod.null(), zod.string()]),
 					blue: zod.union([zod.null(), zod.string()]),
+					magenta: zod.union([zod.null(), zod.string()]),
+					yellow: zod.union([zod.null(), zod.string()]),
+					cyan: zod.union([zod.null(), zod.string()]),
 				}),
 			]),
 		}),
@@ -158,11 +161,35 @@ const hslToRgb = (h: number, s: number, l: number) => {
 	return [255 * f(0), 255 * f(8), 255 * f(4)];
 };
 
+const lightnessCheck = (lightness: number, selection: number[]) => {
+	switch (lightness) {
+		case 39: // Dark Color
+			return hslToRgb(
+				selection[0] - 4 < 0 ? selection[0] - 4 + 360 : selection[0] - 4,
+				selection[1],
+				selection[2] - 20 < 0 ? 0 : selection[2] - 20,
+			);
+		case 44: // Base Color
+			return hslToRgb(selection[0], selection[1], selection[2]);
+		case 50: // Light Color
+			return hslToRgb(
+				selection[0] + 4 > 360 ? selection[0] + 4 - 360 : selection[0] + 4,
+				selection[1] - 20 < 0 ? 0 : selection[1] - 20,
+				selection[2],
+			);
+		default:
+			return [0, 0, 0];
+	}
+};
+
 const colorFilter = (
 	ctx: CanvasRenderingContext2D,
-	redColorTargetHex: string | null,
-	greenColorTargetHex: string | null,
-	blueColorTargetHex: string | null,
+	redChannelColorSelection: string | null,
+	greenChannelColorSelection: string | null,
+	blueChannelColorSelection: string | null,
+	magentaChannelColorSelection: string | null,
+	yellowChannelColorSelection: string | null,
+	cyanChannelColorSelection: string | null,
 ) => {
 	//Declare variables
 	const imgData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -175,124 +202,76 @@ const colorFilter = (
 
 	//Read image and make changes on the fly as it's read
 	for (let i: number = 0; i < data.length; i += 4) {
-		// Red value indicates hair color
-		if (
-			imgData.data[i] >= 200 &&
-			imgData.data[i + 1] === 0 &&
-			imgData.data[i + 2] === 0 &&
-			redColorTargetHex
-		) {
-			const redValue = parseInt(redColorTargetHex.substring(1, 3), 16);
-			const greenValue = parseInt(redColorTargetHex.substring(3, 5), 16);
-			const blueValue = parseInt(redColorTargetHex.substring(5), 16);
-			const hsl = rgbToHsl(redValue, greenValue, blueValue);
-			switch (imgData.data[i]) {
-				case 201:
-					const dark = hslToRgb(
-						hsl[0] - 4 < 0 ? hsl[0] - 4 + 360 : hsl[0] - 4,
-						hsl[1],
-						hsl[2] - 20 < 0 ? 0 : hsl[2] - 20,
-					);
-					red[i] = dark[0];
-					green[i] = dark[1];
-					blue[i] = dark[2];
-					alpha[i] = 255;
-					break;
-				case 225:
-					const base = hslToRgb(hsl[0], hsl[1], hsl[2]);
-					red[i] = base[0];
-					green[i] = base[1];
-					blue[i] = base[2];
-					alpha[i] = 255;
-					break;
-				case 255:
-					const light = hslToRgb(
-						hsl[0] + 4 > 360 ? hsl[0] + 4 - 360 : hsl[0] + 4,
-						hsl[1] - 20 < 0 ? 0 : hsl[1] - 20,
-						hsl[2],
-					);
-					red[i] = light[0];
-					green[i] = light[1];
-					blue[i] = light[2];
-					alpha[i] = 255;
-					break;
+		const HSLOfCurrentPixel = rgbToHsl(imgData.data[i], imgData.data[i + 1], imgData.data[i + 2]);
+
+		let newRGBValue = [imgData.data[i], imgData.data[i + 1], imgData.data[i + 2]];
+
+		switch (HSLOfCurrentPixel[0]) {
+			case 0: {
+				// Red Hue
+				if (!redChannelColorSelection) break;
+				const redValue = parseInt(redChannelColorSelection.substring(1, 3), 16);
+				const greenValue = parseInt(redChannelColorSelection.substring(3, 5), 16);
+				const blueValue = parseInt(redChannelColorSelection.substring(5), 16);
+				const HSLOfSelection = rgbToHsl(redValue, greenValue, blueValue);
+				newRGBValue = lightnessCheck(HSLOfCurrentPixel[2], HSLOfSelection);
+				break;
 			}
-			// Green Color indicates body color
-		} else if (
-			imgData.data[i + 1] >= 82 &&
-			imgData.data[i] === 0 &&
-			imgData.data[i + 2] === 0 &&
-			greenColorTargetHex
-		) {
-			const redValue = parseInt(greenColorTargetHex.substring(1, 3), 16);
-			const greenValue = parseInt(greenColorTargetHex.substring(3, 5), 16);
-			const blueValue = parseInt(greenColorTargetHex.substring(5), 16);
-			const hsl = rgbToHsl(redValue, greenValue, blueValue);
-			switch (imgData.data[i + 1]) {
-				case 82:
-					const darker = hslToRgb(
-						hsl[0] - 8 < 0 ? hsl[0] - 8 + 360 : hsl[0] - 8,
-						hsl[1],
-						hsl[2] - 40 < 0 ? 0 : hsl[2] - 40,
-					);
-					red[i] = darker[0];
-					green[i] = darker[1];
-					blue[i] = darker[2];
-					alpha[i] = 255;
-					break;
-				case 201:
-					const dark = hslToRgb(
-						hsl[0] - 4 < 0 ? hsl[0] - 4 + 360 : hsl[0] - 4,
-						hsl[1],
-						hsl[2] - 20 < 0 ? 0 : hsl[2] - 20,
-					);
-					red[i] = dark[0];
-					green[i] = dark[1];
-					blue[i] = dark[2];
-					alpha[i] = 255;
-					break;
-				case 225:
-					const base = hslToRgb(hsl[0], hsl[1], hsl[2]);
-					red[i] = base[0];
-					green[i] = base[1];
-					blue[i] = base[2];
-					alpha[i] = 255;
-					break;
-				case 255:
-					const light = hslToRgb(
-						hsl[0] + 4 > 360 ? hsl[0] + 4 - 360 : hsl[0] + 4,
-						hsl[1] - 20 < 0 ? 0 : hsl[1] - 20,
-						hsl[2],
-					);
-					red[i] = light[0];
-					green[i] = light[1];
-					blue[i] = light[2];
-					alpha[i] = 255;
-					break;
+			case 60: {
+				// Yellow Hue
+				if (!yellowChannelColorSelection) break;
+				const redValue = parseInt(yellowChannelColorSelection.substring(1, 3), 16);
+				const greenValue = parseInt(yellowChannelColorSelection.substring(3, 5), 16);
+				const blueValue = parseInt(yellowChannelColorSelection.substring(5), 16);
+				const HSLOfSelection = rgbToHsl(redValue, greenValue, blueValue);
+				newRGBValue = lightnessCheck(HSLOfCurrentPixel[2], HSLOfSelection);
+				break;
 			}
-			// Blue Color indicates eye color
-		} else if (
-			imgData.data[i + 2] >= 255 &&
-			imgData.data[i] === 0 &&
-			imgData.data[i + 1] === 0 &&
-			blueColorTargetHex
-		) {
-			const redValue = parseInt(blueColorTargetHex.substring(1, 3), 16);
-			const greenValue = parseInt(blueColorTargetHex.substring(3, 5), 16);
-			const blueValue = parseInt(blueColorTargetHex.substring(5), 16);
-			const hsl = rgbToHsl(redValue, greenValue, blueValue);
-			const base = hslToRgb(hsl[0], hsl[1], hsl[2]);
-			red[i] = base[0];
-			green[i] = base[1];
-			blue[i] = base[2];
-			alpha[i] = 255;
-			// Color should not change
-		} else {
-			red[i] = imgData.data[i];
-			green[i] = imgData.data[i + 1];
-			blue[i] = imgData.data[i + 2];
-			alpha[i] = imgData.data[i + 3];
+			case 120: {
+				// Green Hue
+				if (!greenChannelColorSelection) break;
+				const redValue = parseInt(greenChannelColorSelection.substring(1, 3), 16);
+				const greenValue = parseInt(greenChannelColorSelection.substring(3, 5), 16);
+				const blueValue = parseInt(greenChannelColorSelection.substring(5), 16);
+				const HSLOfSelection = rgbToHsl(redValue, greenValue, blueValue);
+				newRGBValue = lightnessCheck(HSLOfCurrentPixel[2], HSLOfSelection);
+				break;
+			}
+			case 180: {
+				// Cyan Hue
+				if (!cyanChannelColorSelection) break;
+				const redValue = parseInt(cyanChannelColorSelection.substring(1, 3), 16);
+				const greenValue = parseInt(cyanChannelColorSelection.substring(3, 5), 16);
+				const blueValue = parseInt(cyanChannelColorSelection.substring(5), 16);
+				const HSLOfSelection = rgbToHsl(redValue, greenValue, blueValue);
+				newRGBValue = lightnessCheck(HSLOfCurrentPixel[2], HSLOfSelection);
+				break;
+			}
+			case 240: {
+				// Blue Hue
+				if (!blueChannelColorSelection) break;
+				const redValue = parseInt(blueChannelColorSelection.substring(1, 3), 16);
+				const greenValue = parseInt(blueChannelColorSelection.substring(3, 5), 16);
+				const blueValue = parseInt(blueChannelColorSelection.substring(5), 16);
+				const HSLOfSelection = rgbToHsl(redValue, greenValue, blueValue);
+				newRGBValue = lightnessCheck(HSLOfCurrentPixel[2], HSLOfSelection);
+				break;
+			}
+			case 300: {
+				// Magenta Hue
+				if (!magentaChannelColorSelection) break;
+				const redValue = parseInt(magentaChannelColorSelection.substring(1, 3), 16);
+				const greenValue = parseInt(magentaChannelColorSelection.substring(3, 5), 16);
+				const blueValue = parseInt(magentaChannelColorSelection.substring(5), 16);
+				const HSLOfSelection = rgbToHsl(redValue, greenValue, blueValue);
+				newRGBValue = lightnessCheck(HSLOfCurrentPixel[2], HSLOfSelection);
+				break;
+			}
 		}
+		red[i] = newRGBValue[0];
+		green[i] = newRGBValue[1];
+		blue[i] = newRGBValue[2];
+		alpha[i] = imgData.data[i + 3];
 	}
 
 	// Write the image back to the canvas
@@ -308,7 +287,14 @@ const colorFilter = (
 
 type Spritesheet = {
 	url: string; // Blob URL
-	chromaKey: null | { red: null | string; green: null | string; blue: null | string };
+	chromaKey: null | {
+		red: null | string;
+		green: null | string;
+		blue: null | string;
+		magenta: null | string;
+		cyan: null | string;
+		yellow: null | string;
+	};
 };
 
 export type PawnInit = {
@@ -433,7 +419,15 @@ export class Pawn {
 				canvas.height = img.naturalHeight;
 				ctx.drawImage(img, 0, 0);
 				if (sheet.chromaKey)
-					colorFilter(ctx, sheet.chromaKey.red, sheet.chromaKey.green, sheet.chromaKey.blue);
+					colorFilter(
+						ctx,
+						sheet.chromaKey.red,
+						sheet.chromaKey.green,
+						sheet.chromaKey.blue,
+						sheet.chromaKey.magenta,
+						sheet.chromaKey.yellow,
+						sheet.chromaKey.cyan,
+					);
 				this.canvases[sheetIndex] = canvas;
 				this.contexts[sheetIndex] = ctx;
 			};
