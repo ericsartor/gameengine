@@ -16,6 +16,11 @@
     - stage doesnt need "layers", only three nested arrays, [column, cell, things to draw]
     - smooth camera movements (go from here to there over this time)
     - "nudge" hitboxes that, when collided with, convert the movement they are preventing into a different axis so that you slide along them without explicitly moving in that direction
+    - add some kind of "pawn outline" system where you can specify yes/no and color of the outline, could be used for selection, highlighting, blinking, etc
+        - might have to expand sprite sheets to fit outlines or even other elements in the future
+        - in that case, you'd have to chop up spritesheets according to their grid size, then expand every single sprite and track its origin
+        - this would mean spritesheets can ONLY EVER have sprites that are the same grid size, whether that's 2x1, 1x1, 4x3, etc
+            - the engine/tooling would have to manage this such that the tooling might let you specify different sized sprites frmo one source image, but they'd get written into storage on spritesheets with the same grid size
 
 - tooling
 
