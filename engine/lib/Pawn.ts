@@ -7,6 +7,7 @@ import {
 	GridPosition,
 	adjustDiagonalDistance,
 	closerToNumber,
+	createZodErrorMessage,
 	doBoxesOverlap,
 } from './utils';
 
@@ -318,7 +319,7 @@ export const loadPawnFromFile = async (name: string, filePath: string, game: Gam
 	// Attempt to validate input
 	const pawnInit = zPawn.safeParse(jsonData);
 	if (!pawnInit.success) {
-		throw new GameError('invalid pawn init');
+		throw new GameError('invalid pawn init: ' + createZodErrorMessage(pawnInit.error));
 	}
 
 	// Grab/create properties

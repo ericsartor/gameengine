@@ -1,3 +1,5 @@
+import { ZodError } from 'zod';
+
 export type PixelBox = {
 	pixelX: number;
 	pixelY: number;
@@ -13,6 +15,15 @@ export type GridBox = {
 export type GridPosition = {
 	gridX: number;
 	gridY: number;
+};
+
+export const createZodErrorMessage = (e: ZodError): string => {
+	return e.issues
+		.map((issue) => {
+			const path = Array.isArray(issue.path) ? issue.path : [issue.path];
+			return `[${path.join('.')}] ${issue.message}`;
+		})
+		.join(' | ');
 };
 
 export const doBoxesOverlap = (box1: GridBox, box2: GridBox) => {

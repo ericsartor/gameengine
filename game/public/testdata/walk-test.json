@@ -2,7 +2,14 @@
 	"sheets": [
 		{
 			"url": "/testdata/WalkAnimatedSet.png",
-			"chromaKey": { "red": null, "green": null, "blue": null }
+			"chromaKey": {
+				"red": null,
+				"green": null,
+				"blue": null,
+				"cyan": null,
+				"magenta": null,
+				"yellow": null
+			}
 		}
 	],
 	"width": 16,
