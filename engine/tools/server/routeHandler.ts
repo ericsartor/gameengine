@@ -12,39 +12,37 @@ export class RouteError extends Error {
 	}
 }
 
-export const routeHandler = async (
-	req: FastifyRequest,
-	reply: FastifyReply,
-	handler: (req: FastifyRequest) => Promise<Result | void>,
-) => {
-	try {
-		const result = await handler(req);
-		reply.code(200).send(
-			result ?? {
-				message: '',
-				data: null,
-			},
-		);
-	} catch (e) {
-		if (e instanceof RouteError) {
-			reply.code(e.code).send({
-				message: e.message,
-				data: null,
-			});
-		} else if (e instanceof Error) {
-			reply.code(500).send({
-				message: e.message,
-				data: null,
-			});
-		} else if (typeof e?.toString === 'function') {
-			reply.code(500).send({
-				message: e.toString(),
-			});
-		} else {
-			reply.code(500).send({
-				message: 'unknown error occured',
-				data: null,
-			});
+export const routeHandler = (handler: (req: FastifyRequest) => Promise<Result | void>) => {
+	return async (req: FastifyRequest, reply: FastifyReply) => {
+		try {
+			const result = await handler(req);
+			reply.code(200).send(
+				result ?? {
+					message: '',
+					data: null,
+				},
+			);
+		} catch (e) {
+			if (e instanceof RouteError) {
+				reply.code(e.code).send({
+					message: e.message,
+					data: null,
+				});
+			} else if (e instanceof Error) {
+				reply.code(500).send({
+					message: e.message,
+					data: null,
+				});
+			} else if (typeof e?.toString === 'function') {
+				reply.code(500).send({
+					message: e.toString(),
+				});
+			} else {
+				reply.code(500).send({
+					message: 'unknown error occured',
+					data: null,
+				});
+			}
 		}
-	}
+	};
 };
