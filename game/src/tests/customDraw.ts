@@ -1,4 +1,4 @@
-import { Game } from '../../../engine/Game';
+import { Game } from '../../../engine/lib/Game';
 
 const game = new Game({
 	gridSize: 16,

@@ -1,4 +1,4 @@
-import { Game } from '../../../engine/Game';
+import { Game } from '../../../engine/lib/Game';
 
 export const addControllablePawn = (game: Game, pawnName?: string, pawnFile?: string) => {
 	const definedPawnName = pawnName ?? 'controllable-pawn';

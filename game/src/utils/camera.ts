@@ -1,4 +1,4 @@
-import { Game } from '../../../engine/Game';
+import { Game } from '../../../engine/lib/Game';
 
 export const enableCameraMovementWithArrowKeys = (game: Game, speed: number) => {
 	game.input.remap('CameraUp', 'ArrowUp');

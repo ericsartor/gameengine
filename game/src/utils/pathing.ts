@@ -1,5 +1,5 @@
-import { Game } from '../../../engine/Game';
-import { GridCoord } from '../../../engine/types';
+import { Game } from '../../../engine/lib/Game';
+import { GridCoord } from '../../../engine/lib/types';
 
 export const addPathPawn = (game: Game, speed: number, loop: boolean, path: GridCoord[]) => {
 	game.registerPawn('path-pawn', '/testdata/player-test-static-hitbox.json', (p) => {
