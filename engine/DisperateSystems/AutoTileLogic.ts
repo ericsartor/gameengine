@@ -130,7 +130,7 @@ const coordinateMap: { [coord: string]: [number, number] } = {
 };
 
 // Find if the surrounding tiles contain the tileset, find the correct coordinate for specific tile in tileset
-const determineTilesetCoordinate = (
+const determineTilesetCoordinates = (
 	tilesetId: number,
 	tileCoord: [number, number],
 	levelData: any
@@ -180,4 +180,4 @@ const determineTilesetCoordinate = (
 	return coordinateMap[coordinateString];
 };
 
-export default determineTilesetCoordinate;
+export default determineTilesetCoordinates;
