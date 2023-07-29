@@ -1,10 +1,22 @@
 import { Game } from './Game';
+import { Sheet } from './Sheet';
 import { GameError } from './errors';
-import { GridBox } from './utils';
+import { GridBox, createZodErrorMessage } from './utils';
 import zod from 'zod';
 
+const zStageItem = zod.object({
+	sheetIndex: zod.number(),
+	x: zod.number(),
+	y: zod.number(),
+	offsetX: zod.number(),
+	offsetY: zod.number(),
+	width: zod.number(),
+	height: zod.number(),
+});
+
 const zStage = zod.object({
-	sheet: zod.string(),
+	location: zod.string(),
+	sheets: zod.array(zod.string()),
 	gridSize: zod.number(),
 	hitBoxes: zod.array(
 		zod.object({
@@ -14,67 +26,55 @@ const zStage = zod.object({
 			gridHeight: zod.number(),
 		}),
 	),
-	grid: zod.array(zod.array(zod.array(zod.tuple([zod.number(), zod.number()])))),
+	// array of columns -> array of cells in column -> array of items in draw order
+	grid: zod.array(zod.array(zod.array(zStageItem))),
 });
 
-export const loadStageFromFile = async (name: string, filePath: string, game: Game) => {
-	// Download pawn file
-	const jsonData = await fetch(filePath).then((r) => r.json());
-
-	// Attempt to validate input
-	const stageInit = zStage.safeParse(jsonData);
-	if (!stageInit.success) {
-		throw new GameError('invalid stage init');
-	}
-
-	const spritesheetData = await fetch(stageInit.data.sheet).then((r) => r.blob());
-
-	return new Stage(
-		name,
-		{
-			hitboxes: stageInit.data.hitBoxes,
-			spritesheet: URL.createObjectURL(spritesheetData),
-			grid: stageInit.data.grid,
-		},
-		game,
-	);
-};
-
 export type StageInit = {
-	hitboxes: GridBox[];
-	spritesheet: string;
-	grid: [number, number][][][]; // Column (x), cell (y), layers, spritesheet coordinates
+	location: string;
+	hitBoxes: GridBox[];
+	gridSize: number;
+	sheets: string[];
+	grid: zod.infer<typeof zStageItem>[][][]; // Column (x), cell (y), layers, spritesheet coordinates
 };
 
 export class Stage {
-	name: string;
+	location: string;
+	gridSize: number;
 	game: Game;
-	hitboxes: GridBox[];
-	spritesheet: string;
-	grid: [number, number][][][];
-	canvas: HTMLCanvasElement = document.createElement('canvas');
-	context: CanvasRenderingContext2D = this.canvas.getContext('2d')!;
+	hitBoxes: GridBox[];
+	grid: zod.infer<typeof zStageItem>[][][];
+	sheets: Sheet[];
 
-	constructor(name: string, init: StageInit, game: Game) {
-		this.name = name;
+	static _inventory = new Map<string, Stage>();
+	constructor(init: StageInit, game: Game, updateMap = true) {
+		this.location = init.location;
+		this.gridSize = init.gridSize;
 		this.game = game;
-		this.hitboxes = init.hitboxes;
-		this.spritesheet = init.spritesheet;
+		this.hitBoxes = init.hitBoxes;
 		this.grid = init.grid;
 
-		// Set up canvases
-		const img = new Image();
-		img.src = this.spritesheet;
-		img.onload = () => {
-			const canvas = document.createElement('canvas');
-			const ctx = canvas.getContext('2d');
-			if (ctx === null) throw new GameError(`could not initialize context for Pawn ${name}`);
-			ctx.imageSmoothingEnabled = false;
-			canvas.width = img.naturalWidth;
-			canvas.height = img.naturalHeight;
-			ctx.drawImage(img, 0, 0);
-			this.canvas = canvas;
-			this.context = ctx;
-		};
+		// Get instances of all necessary sheets
+		this.sheets = init.sheets.map((sheet) => {
+			const instance = Sheet._inventory.get(sheet);
+			if (!instance) throw new GameError(`no sheet found at ${sheet}`);
+			return instance;
+		});
+
+		// Track animation
+		if (updateMap) Stage._inventory.set(this.location, this);
+	}
+
+	static async _load(location: string, game: Game) {
+		// Download pawn file
+		const jsonData = await fetch(`${location}.stage`).then((r) => r.json());
+
+		// Attempt to validate input
+		const stageInit = zStage.safeParse(jsonData);
+		if (!stageInit.success) {
+			throw new GameError(`invalid stage init: ${createZodErrorMessage(stageInit.error)}`);
+		}
+
+		return new Stage(stageInit.data, game);
 	}
 }

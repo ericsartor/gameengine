@@ -1,0 +1,23 @@
+{
+    "location": "/stages/test-stage",
+    "sheets": [
+        "/sheets/test-stage"
+    ],
+    "gridSize": 16,
+    "hitBoxes": [
+        { "gridX": 1, "gridY": 0, "gridWidth": 1, "gridHeight": 1 },
+        { "gridX": 5, "gridY": 0, "gridWidth": 1, "gridHeight": 1 },
+        { "gridX": 1, "gridY": 4, "gridWidth": 5, "gridHeight": 1 },
+        { "gridX": 0, "gridY": 0, "gridWidth": 1, "gridHeight": 5 },
+        { "gridX": 6, "gridY": 0, "gridWidth": 1, "gridHeight": 5 }
+    ],
+    "grid": [
+        [[{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }]],
+        [[{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }], [], [], [], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }]],
+        [[], [], [], [], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }]],
+        [[], [], [], [], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }]],
+        [[], [], [], [], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }]],
+        [[{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }], [], [], [], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }]],
+        [[{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }], [{ "sheetIndex": 0, "x": 0, "y": 0, "offsetX": 0, "offsetY": 0, "width": 16, "height": 16 }]]
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "location": "/pawns/test-character",
+    "animations": [
+        "/animations/test-character-move-north",
+        "/animations/test-character-move-south",
+        "/animations/test-character-move-west",
+        "/animations/test-character-move-east"
+    ]
+}

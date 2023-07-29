@@ -1,9 +1,11 @@
-import { Pawn, loadPawnFromFile } from './Pawn';
+import { Pawn } from './Pawn';
 import { InputController, InputInit } from './Input';
 import { GameError } from './errors';
-import { Stage, StageInit, loadStageFromFile } from './Stage';
+import { Stage } from './Stage';
 import { ONE_MINUTE } from './numbers';
 import { Camera } from './Camera';
+import { Animation } from './Animation';
+import { Sheet } from './Sheet';
 
 type LogicFunction = (deltaMs: number, timestampMs: number) => void;
 type DrawFunction = (timestampMs: number) => void;
@@ -115,41 +117,18 @@ export class Game {
 	}
 
 	// Pawns
-	pawnsToLoad: { name: string; filePath: string; initializer?: (p: Pawn) => void }[] = [];
-	pawns = new Map<string, Pawn>();
-	pawnList: Pawn[] = [];
-	registerPawn(name: string, filePath: string, initializer?: (p: Pawn) => void) {
-		if (this.started) throw new GameError(`tried to register pawn "${name}" after game started`);
-		this.pawnsToLoad.push({ name, filePath, initializer });
-	}
-	addPawn(pawn: Pawn) {
-		this.pawns.set(pawn.name, pawn);
-		this.pawnList.push(pawn);
-	}
-	getPawn(name: string): Pawn {
-		const pawn = this.pawns.get(name);
-		if (pawn === undefined) throw new GameError(`addressed non-existent pawn "${name}"`);
+	_currentPawns: Pawn[] = [];
+	getPawn(location: string): Pawn {
+		const pawn = Pawn._inventory.get(location);
+		if (pawn === undefined) throw new GameError(`addressed non-existent pawn "${location}"`);
 		return pawn;
 	}
 
 	// Stages
-	stagesToLoad: {
-		name: string;
-		filePath: string;
-		loadByDefault: boolean;
-	}[] = [];
 	stage: Stage | null = null;
-	stages = new Map<string, Stage>();
-	registerStage(name: string, filePath: string, loadByDefault: boolean) {
-		if (this.started) throw new GameError(`tried to register stage "${name}" after game started`);
-		this.stagesToLoad.push({ name, filePath, loadByDefault });
-	}
-	addStage(name: string, stage: Stage) {
-		this.stages.set(name, stage);
-	}
-	setStage(name: string) {
-		const stage = this.stages.get(name);
-		if (!stage) throw new GameError(`tried to set unknown Stage "${name}"`);
+	setStage(location: string) {
+		const stage = Stage._inventory.get(location);
+		if (!stage) throw new GameError(`tried to set unknown Stage "${location}"`);
 		this.stage = stage;
 	}
 
@@ -166,61 +145,75 @@ export class Game {
 			throw new GameError('already added load complete handler');
 		this.loadCompleteCallback = callback;
 	}
-	async start() {
+	_filesToLoad: string[] = [];
+	registerFiles(files: string[]) {
+		this._filesToLoad.push(...files);
+
+		// Sort by load priority
+		const priority = ['sheet', 'animation', 'pawn', 'stage'];
+		this._filesToLoad.sort((a, b) => {
+			const aExtension = a.split('.').pop();
+			const bExtension = b.split('.').pop();
+			if (!aExtension) throw new GameError(`cannot load file with missing extension: ${a}`);
+			if (!bExtension) throw new GameError(`cannot load file with missing extension: ${b}`);
+			if (!priority.includes(aExtension))
+				throw new GameError(`cannot load file with unknown extension: ${a}`);
+			if (!priority.includes(bExtension))
+				throw new GameError(`cannot load file with unknown extension: ${b}`);
+			return priority.indexOf(aExtension) - priority.indexOf(bExtension);
+		});
+	}
+	async start(setup?: () => void) {
 		if (this.started) throw new GameError('game has already started');
 
-		// Load and create stages
-		if (this.loadProgressCallback !== null) {
-			this.loadProgressCallback({
-				message: 'Loading stages...',
-				current: 0,
-				total: this.stagesToLoad.length,
-			});
+		// Load game assets
+		let firstStageLocation: string | null = null;
+		let i = 1;
+		for (const file of this._filesToLoad) {
+			if (this.loadProgressCallback !== null) {
+				this.loadProgressCallback({
+					message: `Loading ${file}...`,
+					current: i++,
+					total: this._filesToLoad.length,
+				});
+			}
+			const [location, extension] = file.split('.');
+			switch (extension) {
+				case 'sheet':
+					await Sheet._load(location);
+					break;
+				case 'animation':
+					await Animation._load(location, this);
+					break;
+				case 'pawn':
+					await Pawn._load(location, this);
+					break;
+				case 'stage':
+					if (firstStageLocation === null) firstStageLocation = location;
+					await Stage._load(location, this);
+					break;
+				default:
+					throw new GameError('unknown file extension');
+			}
 		}
-		await Promise.all(
-			this.stagesToLoad.map(async ({ name, filePath, loadByDefault }, i) => {
-				const stage = await loadStageFromFile(name, filePath, this);
-				this.addStage(name, stage);
-				if (loadByDefault) {
-					this.setStage(name);
-				}
-				if (this.loadProgressCallback !== null) {
-					this.loadProgressCallback({
-						message: 'Loading stages...',
-						current: i + 1,
-						total: this.stagesToLoad.length,
-					});
-				}
-			}),
-		);
-
-		// Load and create pawns
-		if (this.loadProgressCallback !== null) {
-			this.loadProgressCallback({
-				message: 'Loading pawns...',
-				current: 0,
-				total: this.pawnsToLoad.length,
-			});
-		}
-		await Promise.all(
-			this.pawnsToLoad.map(async ({ name, filePath, initializer }, i) => {
-				const pawn = await loadPawnFromFile(name, filePath, this);
-				this.addPawn(pawn);
-				if (initializer) {
-					initializer(pawn);
-				}
-				if (this.loadProgressCallback !== null) {
-					this.loadProgressCallback({
-						message: 'Loading pawns...',
-						current: i + 1,
-						total: this.pawnsToLoad.length,
-					});
-				}
-			}),
-		);
 
 		// Signal load completion
 		if (this.loadCompleteCallback !== null) this.loadCompleteCallback();
+
+		// Set up initial pawns
+		Pawn._inventory.forEach((pawn) => {
+			this._currentPawns.push(pawn);
+		});
+
+		// Set up initial stage
+		if (firstStageLocation) {
+			const stage = Stage._inventory.get(firstStageLocation);
+			if (!stage)
+				throw new GameError(
+					`tried to set default stage but stage was missing: ${firstStageLocation}`,
+				);
+			this.stage = stage;
+		}
 
 		// Run game loop
 		let lastTimestampMs = 0;
@@ -237,6 +230,8 @@ export class Game {
 		window.requestAnimationFrame(loop);
 
 		this.started = true;
+
+		if (setup) setup();
 	}
 
 	// Private methods
@@ -258,7 +253,7 @@ export class Game {
 		});
 
 		// Handling Pawn paths
-		this.pawns.forEach((p) => {
+		this._currentPawns.forEach((p) => {
 			p.moveAlongPath();
 		});
 
@@ -272,9 +267,13 @@ export class Game {
 
 		// Clear caches occasionally to avoid memory leaks
 		if (timestampMs - this.lastCacheClear > ONE_MINUTE) {
-			this.pawns.forEach((pawn) => {
-				pawn.clearHitBoxCache();
-				pawn.clearSpriteCache();
+			this._currentPawns.forEach((pawn) => {
+				pawn._clearHitBoxCache();
+				pawn._clearSpriteCache();
+				pawn.animations.forEach((animation) => {
+					animation._clearHitBoxCache();
+					animation._clearSpriteCache();
+				});
 			});
 		}
 	}
@@ -326,20 +325,20 @@ export class Game {
 				const yEnd = yStart + this.camera.gridHeight + 1;
 				for (let destinationY = yStart; destinationY < yEnd; destinationY++) {
 					// Get layers for this cell if it/they exist
-					const coords = stage.grid[destinationX]?.[destinationY];
+					const items = stage.grid[destinationX]?.[destinationY];
 
 					// Nothing left in this row
-					if (!coords) break;
+					if (!items) break;
 
-					for (const [sourceX, sourceY] of coords) {
+					for (const item of items) {
 						this.drawToCanvas(
-							stage.canvas,
-							sourceX,
-							0,
-							sourceY,
-							0,
-							this.gridSize,
-							this.gridSize,
+							this.stage.sheets[item.sheetIndex].ctx.canvas,
+							item.x,
+							item.offsetX,
+							item.y,
+							item.offsetY,
+							item.width,
+							item.height,
 							destinationX,
 							destinationY,
 						);
@@ -349,7 +348,7 @@ export class Game {
 
 			// Draw hitbox
 			if (this.developmentMode) {
-				this.stage.hitboxes.forEach((hitBox) => {
+				this.stage.hitBoxes.forEach((hitBox) => {
 					this.ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
 					this.ctx.fillRect(
 						Math.round(
@@ -373,27 +372,30 @@ export class Game {
 		});
 
 		// Run Pawn draw functions
-		this.pawns.forEach((pawn) => {
+		this._currentPawns.forEach((pawn) => {
 			// Draw sprite box
 			if (this.developmentMode) {
 				this.ctx.fillStyle = 'yellow';
-				this.ctx.fillRect(
-					Math.round(
-						(pawn.position.gridX - pawn.origin.gridX) * this.gridSize * scale -
-							this.camera.position.gridX * this.gridSize * scale,
-					),
-					Math.round(
-						(pawn.position.gridY - pawn.origin.gridY) * this.gridSize * scale -
-							this.camera.position.gridY * this.gridSize * scale,
-					),
-					pawn.width * scale,
-					pawn.height * scale,
-				);
+				if (pawn.currentAnimation !== null) {
+					this.ctx.fillRect(
+						Math.round(
+							(pawn.position.gridX - pawn.currentAnimation.origin.gridX) * this.gridSize * scale -
+								this.camera.position.gridX * this.gridSize * scale,
+						),
+						Math.round(
+							(pawn.position.gridY - pawn.currentAnimation.origin.gridY) * this.gridSize * scale -
+								this.camera.position.gridY * this.gridSize * scale,
+						),
+						pawn.currentAnimation.width * scale,
+						pawn.currentAnimation.height * scale,
+					);
+				}
 			}
 
 			// Draw sprites
-			if (pawn.currentAnimation !== null) {
-				const spriteLayers = pawn.getSprite(timestampMs);
+			const currentAnimation = pawn.currentAnimation;
+			if (currentAnimation !== null) {
+				const spriteLayers = pawn._getSprite();
 				spriteLayers.forEach((sprite) => {
 					if (sprite === null) return;
 					this.drawToCanvas(
@@ -404,15 +406,15 @@ export class Game {
 						sprite.offsetY,
 						sprite.width,
 						sprite.height,
-						pawn.position.gridX - pawn.origin.gridX,
-						pawn.position.gridY - pawn.origin.gridY,
+						pawn.position.gridX - currentAnimation.origin.gridX,
+						pawn.position.gridY - currentAnimation.origin.gridY,
 					);
 				});
 			}
 
 			// Draw hitbox
 			if (this.developmentMode) {
-				const hitBox = pawn.getHitBox();
+				const hitBox = pawn._getHitBox();
 				if (hitBox !== null) {
 					this.ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
 					this.ctx.fillRect(
@@ -465,16 +467,16 @@ export class Game {
 
 			// Pawn distances
 			const pawns: Pawn[] = [];
-			this.pawns.forEach((p) => {
+			this._currentPawns.forEach((p) => {
 				pawns.push(p);
 				writeNextLine(
-					`${p.name}: ${p.position.gridX.toFixed(20)}, ${p.position.gridY.toFixed(20)}`,
+					`${p.location}: ${p.position.gridX.toFixed(20)}, ${p.position.gridY.toFixed(20)}`,
 				);
 			});
 			for (let i = 0; i < pawns.length; i++) {
 				for (let j = i + 1; j < pawns.length; j++) {
 					const gridDistance = pawns[i].getDistanceToPawn(pawns[j]);
-					writeNextLine(`${pawns[i].name} -> ${pawns[j].name} = ${gridDistance}`);
+					writeNextLine(`${pawns[i].location} -> ${pawns[j].location} = ${gridDistance}`);
 				}
 			}
 		}
