@@ -100,7 +100,7 @@ export const handleNewGame = (f: FastifyInstance) => {
 				}),
 
 				// Create asset directories
-				...['public/sheets', 'public/pawns', 'public/stages', 'public/animations'].map((folder) =>
+				...['public/sheets', 'public/pawns', 'public/stages'].map((folder) =>
 					mkdir(join(gameFolder, folder)),
 				),
 			]);
