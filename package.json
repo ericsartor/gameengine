@@ -1,0 +1,23 @@
+{
+	"name": "gameengine",
+	"version": "1.0.0",
+	"description": "## animation-tool",
+	"main": "index.js",
+	"scripts": {
+		"tools": "ts-node engine/tools/server/main.ts"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ericsartor/gameengine.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/ericsartor/gameengine/issues"
+	},
+	"homepage": "https://github.com/ericsartor/gameengine#readme",
+	"dependencies": {
+		"ts-node": "^10.9.1"
+	}
+}

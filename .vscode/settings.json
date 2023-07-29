@@ -1,3 +1,15 @@
 {
-	"cSpell.words": ["autotile", "autotiles", "tileset", "tilesets"]
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"cSpell.words": [
+		"composables",
+		"deregisters",
+		"Lavelle",
+		"pinia",
+		"autotile",
+		"autotiles",
+		"tileset",
+		"tilesets"
+	],
+	"volar.inlayHints.eventArgumentInInlineHandlers": false
 }
