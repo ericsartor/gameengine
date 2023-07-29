@@ -9,9 +9,9 @@
 		- It is unique to every set, both autotiles and non-autotiles
 	tileCoord: [number, number]
 		- The specific cell, that has the tileset with the given tilesetId
-		- It is assumed that this cell contains the autotileset and is not checked; as this shouldn't be called on cells without the tileset on it
+		- It is assumed that this cell contains the auto tileset and is not checked; as this shouldn't be called on cells without the tileset on it
 	levelData: any (Currently, should update when type is determined)
-		- The information regarding the specific levels cell information (may be seperate to other level Data)
+		- The information regarding the specific levels cell information (may be separate to other level Data)
 		- This parameter is pseudo-temporary. Once specific level information schema is determined, this should be replaced with the appropriate name 
 */
 
@@ -21,7 +21,7 @@
 	- The first index of the array represents the x-coordinate of the level
 	- The second index of the array represents the y-coordinate on the x-coordinates row
 	- levelData[x][y] has method "hasTileset(tilesetId: number): boolean" to determine if that cell (levelData[x][y]) has the specific tileset active
-	- This can be changed to reflect the scheme that becomes implimented, all that is required is a way to access specific cells through indexing ([x][y]),
+	- This can be changed to reflect the scheme that becomes implemented, all that is required is a way to access specific cells through indexing ([x][y]),
 		- and that each cell has information about the tilesets it holds (with a way to access that information)
 */
 
