@@ -3,30 +3,40 @@ import { GameError } from './errors';
 import { createZodErrorMessage } from './utils';
 import { ColorFilterSelections, colorFilter } from './colorFilter';
 
-// Groups are used in the tooling UI to use multiple tiles in unison, and are not actually used in the engine
-const zTileGroup = zod.array(zod.object({ x: zod.number(), y: zod.number() }));
+// Tile data groups tiles together and gives them properties
+// { '0,0': { ...data } }
+const zTileData = zod.record(
+	zod.object({
+		gridX: zod.number(),
+		gridY: zod.number(),
+		gridWidth: zod.number(),
+		gridHeight: zod.number(),
+		hitBox: zod.boolean(),
+	}),
+);
+type TileData = zod.infer<typeof zTileData>;
 
 // This represents the metadata for a spritesheet image
-const zSheet = zod.object({
+export const zSheet = zod.object({
 	location: zod.string(), // folder path to image/metadata file WITH file name but WITHOUT extension
-	gridSize: zod.number(), // this should be the same as the game
-	groups: zod.array(zTileGroup),
+	gridSize: zod.number(),
+	tileData: zTileData,
 });
 
-type SheetProps = {
-	location: string;
-	gridSize: number;
+type SheetProps = zod.infer<typeof zSheet> & {
 	ctx: CanvasRenderingContext2D;
 };
 export class Sheet {
 	location: string;
 	gridSize: number;
+	tileData: TileData;
 	ctx: CanvasRenderingContext2D;
 
 	static _inventory = new Map<string, Sheet>();
 	constructor(props: SheetProps, updateMap = true) {
 		this.location = props.location;
 		this.gridSize = props.gridSize;
+		this.tileData = props.tileData;
 		this.ctx = props.ctx;
 		if (updateMap) Sheet._inventory.set(this.location, this);
 	}
@@ -60,9 +70,8 @@ export class Sheet {
 				ctx.drawImage(img, 0, 0);
 				resolve(
 					new Sheet({
+						...meta.data,
 						ctx,
-						gridSize: meta.data.gridSize,
-						location: location,
 					}),
 				);
 			});
@@ -83,6 +92,7 @@ export class Sheet {
 				ctx,
 				gridSize: this.gridSize,
 				location: this.location,
+				tileData: this.tileData,
 			},
 			false,
 		);
