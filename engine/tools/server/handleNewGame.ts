@@ -7,12 +7,11 @@ import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
+import { GAMES_DIR, createOrUpdateGameMeta, zGameMeta } from './utils/gameMeta';
+import { getBodyAsSchema } from './utils/requests';
 const execPromise = promisify(exec);
 
-const zNewGame = zod.object({
-	name: zod.string(),
-	gridSize: zod.number(),
-});
+const zNewGame = zod.intersection(zGameMeta.pick({ name: true }), zGameMeta.partial());
 
 const defaultViteHtmlFile = `<!DOCTYPE html>
 <html lang="en">
@@ -65,21 +64,26 @@ export const handleNewGame = (f: FastifyInstance) => {
 	f.post(
 		'/new-game',
 		routeHandler(async (req) => {
-			const body = zNewGame.safeParse(req.body);
-			if (!body.success) throw new RouteError(createZodErrorMessage(body.error), 400);
+			// Get body
+			const body = getBodyAsSchema(req, zGameMeta);
 
 			// Make parent games folder if not made yet
-			const gamesParentFolder = join(__dirname, '../../games');
-			if (!existsSync(gamesParentFolder)) mkdir(gamesParentFolder);
+			if (!existsSync(GAMES_DIR)) mkdir(GAMES_DIR);
+
+			// Create url safe folder name
+			const gameFolderName = body.name
+				.trim()
+				.replace(/\s+/, '-')
+				.replace(/[^a-z0-9\-_]/, '');
 
 			// Check for existence of game folder with provided name
-			const gameFolder = join(gamesParentFolder, body.data.name);
+			const gameFolder = join(GAMES_DIR, gameFolderName);
 			if (existsSync(gameFolder))
-				throw new RouteError(`game with name "${body.data.name}" already exists`, 400);
+				throw new RouteError(`game with name "${gameFolderName}" already exists`, 400);
 
 			// Initialize game and make necessary subfolders
-			process.chdir(gamesParentFolder);
-			await execPromise(`npm create vite@latest ${body.data.name} -- --template vanilla-ts`);
+			process.chdir(GAMES_DIR);
+			await execPromise(`npm create vite@latest ${gameFolderName} -- --template vanilla-ts`);
 			process.chdir(gameFolder);
 			await Promise.all(
 				['src', 'public'].map(async (dir) => {
@@ -87,12 +91,16 @@ export const handleNewGame = (f: FastifyInstance) => {
 					await mkdir(dir);
 				}),
 			);
+
+			// Initialize game metadata file
+			const gameMeta = createOrUpdateGameMeta(body);
+
 			await Promise.all([
 				// Set up HTML file
 				writeFile('index.html', defaultViteHtmlFile, { encoding: 'utf8' }),
 
 				// Set up main TS file
-				writeFile('src/main.ts', createDefaultMain(body.data.gridSize), { encoding: 'utf8' }),
+				writeFile('src/main.ts', createDefaultMain(gameMeta.gridSize), { encoding: 'utf8' }),
 
 				// Set up Vite type file
 				writeFile('src/vite-env.d.ts', '/// <reference types="vite/client" />', {

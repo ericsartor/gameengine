@@ -6,6 +6,9 @@
 
 
 - engine
+    - add abstraction over line and rectangle drawing functions that consider current game scale and use grid positions rather than pixel
+    - stages should be drawn by layer, left to right, top to bottom lowest layer to highest layer, to ensure z-indexing works as expected
+    - pawns should be also be drawn top to bottom
     - Sheet metadata should store which sprites are hitbox by default, and the tooling would know to place the hitbox when using the sprite
     - hitbox "groups" so that certain hitboxes can ignore each other
     - figure out how to organize class methods that are only to be used by the engine separately from public methods to be used by the game logic
@@ -35,27 +38,45 @@
   - separate code into "tools" and "lib" folders
   - tools
     - local API server takes request like "create-game", "add-spritesheet", "add-pawn", "add-stage"
-      - create-game
-        - takes a name and a grid size
-        - uses `vite` to create a new project with the provided name with TypeScript as a sibling of the `engine` folder
-        - writes a file called `game-config.json` that keeps details about the game to be used by tooling, like name, grid size, etc
+      - POST /new-game
+        - √ takes full game metadata in body
+        - √ uses `vite` to create a new project with the provided name with TypeScript as a sibling of the `engine` folder
+        - √ writes a file called `game-config.json` that keeps details about the game to be used by tooling, like name, grid size, etc
         - initializes the `main.ts` with some boilerplate code that:
-          - instantiates a game with specified gridsize
+          - √ instantiates a game with specified gridsize
           - registers a test pawn with movement controls via logic function
           - registers a test stage
           - registers some loading callbacks that just print to the console
-          - starts the game
-      - add-spritesheet
-        - takes a name, gridsize, chroma colors
-        - stores the spritesheet png in the game folder under a "sheets" folder
-        - stores a metadata file with the sheet that could contain information needed in the future, for now just describes width, height, gridsize, chroma colors
-        - these spritesheets can be used for pawn and stages
-      - add-pawn
-        - takes name and metadata in body
-        - creates/updates a metadata file in `pawns` folder of game
-      - add-stage
-        - takes name and metadata in body
-        - creates/updates a metadata file in `stages` folder of game
+          - √ starts the game
+      - GET /game/:gameName/inventory
+        - gets a JSON inventory of all sheets/aniamtions/pawns/stages (images must be downloaded separately)
+      - √ GET /game/:gameName/metadata
+        - √ gets the game.json file in the game root
+      - √ MOVE /game/:gameName/files/move?file=...&to=...
+        - √ takes a "file" (with extension) and "to" (with extension) in the URL query
+        - √ moves the specified file (and associated image if sheet) to the new location
+      - DELETE /game/:gameName/files/delete?file=...
+        - takes a "file" (with extension) in the URL query
+        - deletes the file (and associated image if sheet)
+      - √ POST /game/:gameName/metadata
+        - √ takes full game metadata in body
+        - √ creates/updates the game.json file in the game root
+      - √ POST /game/:gameName/sheet/metadata
+        - √ takes full sheet metadata in body
+        - √ stores the metadata at the specified location as a .sheet
+      - √ POST /game/:gameName/sheet/image?location=...
+        - √ takes image file in body
+        - √ takes "location" in query
+        - √ stores the image at the specified location as a .png
+      - POST /game/:gameName/animation/metadata
+        - takes full animation metadata in body
+        - stores the metadata at the specified location as a .animation
+      - POST /game/:gameName/pawn/metadata
+        - takes full pawn metadata in body
+        - stores the metadata at the specified location as a .pawn
+      - POST /game/:gameName/stage/metadata
+        - takes full stage metadata in body
+        - stores the metadata at the specified location as a .stage
     - spritesheet tool
       - should have some kind of support fpor the chroma keying feature even if you aren't drawing in it directly, you should be able to preview chroma keying to make sure it works
     - pawn tool
