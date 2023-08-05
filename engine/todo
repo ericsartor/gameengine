@@ -37,7 +37,7 @@
 
   - separate code into "tools" and "lib" folders
   - tools
-    - local API server takes request like "create-game", "add-spritesheet", "add-pawn", "add-stage"
+    - local API server takes request to do things like manage game assets and metadata
       - POST /new-game
         - √ takes full game metadata in body
         - √ uses `vite` to create a new project with the provided name with TypeScript as a sibling of the `engine` folder
@@ -55,9 +55,9 @@
       - √ MOVE /game/:gameName/files/move?file=...&to=...
         - √ takes a "file" (with extension) and "to" (with extension) in the URL query
         - √ moves the specified file (and associated image if sheet) to the new location
-      - DELETE /game/:gameName/files/delete?file=...
-        - takes a "file" (with extension) in the URL query
-        - deletes the file (and associated image if sheet)
+      - √ DELETE /game/:gameName/files/delete?file=...
+        - √ takes a "file" (with extension) in the URL query
+        - √ deletes the file (and associated image if sheet)
       - √ POST /game/:gameName/metadata
         - √ takes full game metadata in body
         - √ creates/updates the game.json file in the game root

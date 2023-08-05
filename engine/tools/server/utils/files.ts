@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { getGameDir } from './gameMeta';
 import { join } from 'path';
-import { renameSync, readFileSync } from 'fs';
+import { renameSync, readFileSync, unlinkSync } from 'fs';
 import { RouteError } from '../routeHandler';
 import zod from 'zod';
 
@@ -24,13 +24,27 @@ export const placeFileInGameDir = (
 	writeFileSync(join(fileFolder, fileName), data, { encoding });
 };
 
-// export const readGameFile = (gameName: string, file: string) => {
+export const deleteGameFile = (gameName: string, file: string) => {
+	// Get and validate file path
+	const gameDir = getGameDir(gameName);
+	const filePath = join(gameDir, 'public', file);
+	if (!existsSync(filePath)) {
+		throw new RouteError(`file '${file}' does not exist`, 404);
+	}
 
-// };
+	// Delete file
+	unlinkSync(filePath);
 
-const zGameFile = zod.object({
-	location: zod.string(),
-});
+	// Delete PNG file if file was a sheet and the PNG exists
+	const split = filePath.split('.');
+	const extension = split.pop();
+	if (extension === 'sheet') {
+		const pngFilePath = `${split.join('.')}.png`;
+		if (existsSync(pngFilePath)) {
+			unlinkSync(pngFilePath);
+		}
+	}
+};
 
 export const moveGameFile = (gameName: string, file: string, newFile: string) => {
 	// Validate extensions were inlcuded
@@ -82,7 +96,7 @@ export const moveGameFile = (gameName: string, file: string, newFile: string) =>
 	extensionsToCheck.forEach((extension) => {
 		const oldFileLocation = `${absoluteSourceLocation}.${extension}`;
 		if (!existsSync(oldFileLocation)) {
-			throw new RouteError(`current file '${file}' does not exist and cannot be moved`, 400);
+			throw new RouteError(`current file '${file}' does not exist and cannot be moved`, 404);
 		}
 		const newFileLocation = `${absoluteNewLocation}.${extension}`;
 		if (existsSync(newFileLocation)) {
