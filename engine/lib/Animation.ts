@@ -30,7 +30,7 @@ const zTimelineItem = zod.object({
 
 const zTimeline = zod.array(zTimelineItem);
 
-const zAnimation = zod.object({
+export const zAnimation = zod.object({
 	location: zod.string(),
 	sheets: zod.array(
 		zod.object({

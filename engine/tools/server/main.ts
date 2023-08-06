@@ -3,7 +3,7 @@ import multipart from '@fastify/multipart';
 import zod from 'zod';
 import { handleNewGame } from './handleNewGame';
 import { handleGame } from './handleGame';
-import { handleSheet } from './handleSheet';
+import { handleAssets } from './handleAssets';
 import { handleFiles } from './handleFiles';
 
 (async () => {
@@ -17,7 +17,7 @@ import { handleFiles } from './handleFiles';
 	// Routes
 	handleNewGame(fastify);
 	handleGame(fastify);
-	handleSheet(fastify);
+	handleAssets(fastify);
 	handleFiles(fastify);
 
 	// Fallback route for front end assets

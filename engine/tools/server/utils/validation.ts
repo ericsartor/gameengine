@@ -1,4 +1,7 @@
 import { RouteError } from '../routeHandler';
+import { getGameDir } from './gameMeta';
+import { join } from 'path';
+import { existsSync } from 'fs';
 
 // Grid size
 export const validateGridSize = (gridSize: number) => {
@@ -19,5 +22,17 @@ export const validateLocation = (location: string) => {
 			`invalid location '${location}', must pass: ${invalidCharactersLocationRegexString}`,
 			400,
 		);
+	}
+};
+
+export const validateAssetDependency = (
+	gameName: string,
+	dependencyLocation: string,
+	type: string,
+) => {
+	const gameDir = getGameDir(gameName);
+	const dependencyPath = join(gameDir, 'public', `${dependencyLocation}.${type}`);
+	if (!existsSync(dependencyPath)) {
+		throw new RouteError(`invalid dependency '${dependencyLocation}' doesnt exist`, 404);
 	}
 };
