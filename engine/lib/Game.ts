@@ -1,4 +1,3 @@
-import { InputController, InputInit } from './Input';
 import { GameError } from './errors';
 import { Camera } from './Camera';
 
@@ -24,7 +23,6 @@ export class Game {
 	deltaMs: number = 0;
 	deltaSeconds: number = 0;
 
-	input = new InputController();
 	camera: Camera;
 
 	constructor(options: {
@@ -33,7 +31,6 @@ export class Game {
 		drawGrid?: boolean;
 		cellSize?: number;
 		scale?: number;
-		inputInits?: InputInit[];
 		// screenSize?: {
 		//     width: number;
 		//     height: number;
@@ -68,11 +65,6 @@ export class Game {
 		window.addEventListener('resize', () => {
 			this.resizeCanvas();
 		});
-
-		// Initialize input
-		if (options.inputInits) {
-			this.input.add(options.inputInits);
-		}
 
 		// Append canvas to page
 		this.canvasContainer.append(this.canvas);
@@ -138,25 +130,12 @@ export class Game {
 			this.fps = (1000 / deltaMs).toFixed(2);
 		}
 
-		// Handle inputs that have handlers
-		this.input.buffer.forEach((nameOrIdentifier) => {
-			const handler = this.inputHandlers[nameOrIdentifier];
-			if (handler) handler(deltaMs, timestampMs);
-			this.input.get(nameOrIdentifier).names.forEach((name) => {
-				const handler = this.inputHandlers[name];
-				if (handler) handler(deltaMs, timestampMs);
-			});
-		});
-
 		// Run user logic functions
 		this.logicFunctions.forEach((func) => {
 			func(deltaMs, timestampMs);
 		});
-
-		// Flush input actions regardless of if they were handled
-		this.input.flush();
 	}
-	private drawToCanvas(
+	drawToCanvas(
 		source: CanvasImageSource,
 		sourceX: number,
 		sourceXOffset: number,
