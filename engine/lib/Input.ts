@@ -1,125 +1,95 @@
-import { GameError } from './errors';
-
-export type InputInit = {
-	names: string[];
-	identifier: string;
-};
-export type Input = {
-	names: string[]; // keys used to look up the input
-	identifier: string; // either a KeyboardEvent.code value or a Gamepad button/axis name
-	justHappened: boolean; // determines if a button was pressed during the last logic loop
-	pressed: boolean; // only applies to buttons, not axes
-	timestampMs: number; // last time a change happened on this input
-	value: number; // a number that means something different depending on the input:
-	// gamepad axes use -1.0 - 1.0 to indicate direction/extent, gamepad buttons use 0.0 - 1.0
-	// to indicate extent (triggers, for example), and potentially analog keyboards might use this too
+// This represents an instance of a change in the value of a device input
+type Input = {
+	value: number; // Between 0 and 1, degree to which that input is activated (most buttons will only be 0 or 1)
+	identifier: string; // code or name of input
+	device: DeviceName; // name of device that produced the input
 };
 
-export class InputController {
-	// Handle inputs
-	static initialized = false;
-	static instances: InputController[] = [];
-	static keyDownHandler(event: KeyboardEvent) {
-		InputController.instances.forEach((controller) => {
-			const input = controller.inputMap[event.code];
-			if (!input) return;
-			event.preventDefault();
-			event.stopPropagation();
-			if (input.pressed === false) {
-				input.pressed = true;
-				input.justHappened = true;
-				input.value = 1;
-				input.timestampMs = performance.now();
-				controller.buffer.add(input.identifier);
-				input.names.forEach((name) => {
-					controller.buffer.add(name);
-				});
-				input.names.forEach((name) => {
-					controller.buffer.add(name);
-				});
-			}
-		});
-	}
-	static keyUpHandler(event: KeyboardEvent) {
-		InputController.instances.forEach((controller) => {
-			const input = controller.inputMap[event.code];
-			if (!input) return;
-			event.preventDefault();
-			event.stopPropagation();
-			if (input.pressed === true) {
-				input.pressed = false;
-				input.justHappened = true;
-				input.value = 0;
-				input.timestampMs = performance.now();
+// This is a map of the actual event handlers for input changes, by device, by game input
+type InputHandler = (input: Input) => void;
+type HandlerMap = { [gameInput: string]: Set<InputHandler> };
+type DeviceName = 'keyboard' | 'controller0' | 'controller1' | 'controller2' | 'controller3';
+const handlerMap: { [name in DeviceName]: HandlerMap } = {
+	keyboard: {},
+	controller0: {},
+	controller1: {},
+	controller2: {},
+	controller3: {},
+};
 
-				// TODO: should keyup events insert into the buffer?
-				// controller.buffer.add(input.identifier);
-				// input.names.forEach((name) => {
-				//     controller.buffer.add(name);
-				// });
-			}
-		});
-	}
+// These map game inputs to actual device input codes/names, and vice versa
+type Identifier = string;
+type InputMap = { [gameInput: string]: Identifier };
+const inputMaps: { [name in DeviceName]: InputMap } = {
+	keyboard: {},
+	controller0: {},
+	controller1: {},
+	controller2: {},
+	controller3: {},
+};
+type IdentifierMap = { [inputIdentifier: Identifier]: Set<string> };
+const identifierMaps: { [name in DeviceName]: IdentifierMap } = {
+	keyboard: {},
+	controller0: {},
+	controller1: {},
+	controller2: {},
+	controller3: {},
+};
 
-	private inputMap: { [identifier: string]: Input } = {};
-
-	constructor() {
-		InputController.instances.push(this);
-		if (!InputController.initialized) {
-			window.addEventListener('keydown', InputController.keyDownHandler);
-			window.addEventListener('keyup', InputController.keyUpHandler);
+export const Input = {
+	// Registers an input handler, duplicate callbacks will be ignored per input per device
+	addInputListener(gameInput: string, deviceName: DeviceName, callback: InputHandler): boolean {
+		if (!handlerMap[deviceName][gameInput]) {
+			handlerMap[deviceName][gameInput] = new Set();
 		}
-	}
-	add(inits: InputInit[]) {
-		inits.forEach((init) => {
-			const input = {
-				...init,
-				pressed: false,
-				justHappened: false,
-				value: 0,
-				timestampMs: 0,
-			};
-			this.inputMap[init.identifier] = input;
-			init.names.forEach((name) => {
-				if (this.inputMap[name]) throw new GameError(`duplicate input name ${name}`);
-				this.inputMap[name] = input;
+		if (handlerMap[deviceName][gameInput].has(callback)) return false;
+		handlerMap[deviceName][gameInput].add(callback);
+		return true;
+	},
+
+	// Allows for remapping of game inputs to device inputs
+	mapInput(gameInput: string, inputIdentifier: Identifier, deviceName?: DeviceName) {
+		(deviceName ? [deviceName] : (Object.keys(inputMaps) as DeviceName[])).forEach((deviceName) => {
+			inputMaps[deviceName][gameInput] = inputIdentifier;
+			if (!identifierMaps[deviceName][inputIdentifier]) {
+				identifierMaps[deviceName][inputIdentifier] = new Set();
+			}
+			identifierMaps[deviceName][inputIdentifier].add(gameInput);
+		});
+	},
+};
+
+// Handle keyboard events by calling input handlers
+const keyboardInputMap: { [code: string]: boolean } = {};
+window.addEventListener('keydown', (e) => {
+	if (keyboardInputMap[e.code]) return;
+	keyboardInputMap[e.code] = true;
+	const gameInputs = identifierMaps.keyboard[e.code];
+	if (gameInputs) {
+		gameInputs.forEach((gameInput) => {
+			handlerMap.keyboard[gameInput].forEach((handler) => {
+				handler({
+					value: 1,
+					identifier: e.code,
+					device: 'keyboard',
+				});
 			});
 		});
 	}
-
-	// Remapping
-
-	remap(name: string, identifier: string) {
-		this.add([{ names: [name], identifier }]);
+});
+window.addEventListener('keyup', (e) => {
+	if (!keyboardInputMap[e.code]) return;
+	keyboardInputMap[e.code] = false;
+	const gameInputs = identifierMaps.keyboard[e.code];
+	if (gameInputs) {
+		gameInputs.forEach((gameInput) => {
+			handlerMap.keyboard[gameInput].forEach((handler) => {
+				handler({
+					value: 0,
+					identifier: e.code,
+					device: 'keyboard',
+				});
+			});
+		});
 	}
-
-	// Context management
-
-	private activeContexts = new Set<string>();
-	activateContext(context: string) {
-		this.activeContexts.add(context);
-	}
-	setOnlyContext(context: string) {
-		this.deactivateAllContexts();
-		this.activateContext(context);
-	}
-	deactivateContext(context: string) {
-		this.activeContexts.delete(context);
-	}
-	deactivateAllContexts() {
-		this.activeContexts.clear();
-	}
-
-	// Input querying
-
-	buffer = new Set<string>();
-	flush() {
-		this.buffer.clear();
-	}
-
-	get(name: string): Input {
-		const input = this.inputMap[name];
-		if (!input) throw new GameError(`requested input with unknown name/identifier "${name}"`);
-		return input;
-	}
-}
+});

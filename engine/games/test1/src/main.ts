@@ -3,7 +3,7 @@ import { Game } from '../../../lib/Game';
 // Create game instance and insert game canvas in page
 const game = new Game({
 	el: '#game', // target selector or node to place game within
-	gridSize: 16, // base grid size of game
+	cellSize: 16, // base grid size of game
 	developmentMode: true, // enables various overlays and elements to aid in development
 	scale: 6, // increase this to effectively set the default camera zoom
 });

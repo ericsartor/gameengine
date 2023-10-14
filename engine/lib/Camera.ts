@@ -17,10 +17,10 @@ export class Camera {
 	}
 
 	get gridWidth() {
-		return this.game.canvas.width / (this.game.gridSize * this.game.scale * this.zoom);
+		return this.game.canvas.width / (this.game.cellSize * this.game.scale * this.zoom);
 	}
 	get gridHeight() {
-		return this.game.canvas.height / (this.game.gridSize * this.game.scale * this.zoom);
+		return this.game.canvas.height / (this.game.cellSize * this.game.scale * this.zoom);
 	}
 
 	zoom = 1;
