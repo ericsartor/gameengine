@@ -39,7 +39,7 @@ export const testInput = () => {
 		eastSpeed: 0,
 		southSpeed: 0,
 		westSpeed: 0,
-		baseSpeed: 24,
+		baseSpeed: 10, // This is in cells, not pixels
 		canvas,
 		ctx,
 	};
@@ -66,7 +66,7 @@ export const testInput = () => {
 		const [adjustedX, adjustedY] = adjustDiagonalDistance(
 			newX - box.x,
 			newY - box.y,
-			box.baseSpeed,
+			box.baseSpeed * deltaSeconds,
 		);
 		box.x += adjustedX;
 		box.y += adjustedY;
