@@ -192,12 +192,19 @@ export class Game {
 				for (let destinationX = xStart; destinationX < xEnd; destinationX++) {
 					for (let destinationY = yStart; destinationY < yEnd; destinationY++) {
 						this.ctx.strokeStyle = 'pink';
-						this.ctx.strokeRect(
-							Math.round(destinationX * this.cellSize * scale),
-							Math.round(destinationY * this.cellSize * scale),
-							this.cellSize * scale,
-							this.cellSize * scale,
-						);
+						// this.ctx.strokeRect(
+						// 	Math.round(destinationX * this.cellSize * scale),
+						// 	Math.round(destinationY * this.cellSize * scale),
+						// 	this.cellSize * scale,
+						// 	this.cellSize * scale,
+						// );
+						const x = Math.round(destinationX * this.cellSize * scale);
+						const y = Math.round(destinationY * this.cellSize * scale);
+						this.ctx.beginPath();
+						this.ctx.moveTo(x + this.cellSize, y);
+						this.ctx.lineTo(x, y);
+						this.ctx.lineTo(x, y + this.cellSize);
+						this.ctx.stroke();
 					}
 				}
 			}
